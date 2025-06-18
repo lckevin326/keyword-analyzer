@@ -15,7 +15,8 @@ export default function TrendingPage() {
   const [loading, setLoading] = useState(false)
   const [results, setResults] = useState<TrendingKeyword[]>([])
   const [error, setError] = useState('')
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null)
+  const [mounted, setMounted] = useState(false)
 
   const loadTrendingKeywords = async () => {
     setLoading(true)
@@ -43,7 +44,8 @@ export default function TrendingPage() {
       }
 
       setResults(result.data || [])
-      setLastUpdated(new Date())
+      // 使用确定性的时间戳格式化，避免 hydration mismatch
+      setLastUpdated(new Date().toLocaleTimeString('zh-CN'))
 
     } catch (error: any) {
       console.error('获取热门关键词失败:', error)
@@ -54,6 +56,7 @@ export default function TrendingPage() {
   }
 
   useEffect(() => {
+    setMounted(true)
     // 页面加载时自动获取热门关键词
     loadTrendingKeywords()
   }, [location])
@@ -134,11 +137,11 @@ export default function TrendingPage() {
                   )}
                 </Button>
 
-                {lastUpdated && (
+                {mounted && lastUpdated && (
                   <div className="text-xs text-muted-foreground flex items-center space-x-1">
                     <Calendar className="h-3 w-3" />
                     <span>
-                      最后更新: {lastUpdated.toLocaleTimeString('zh-CN')}
+                      最后更新: {lastUpdated}
                     </span>
                   </div>
                 )}

@@ -119,12 +119,19 @@ class DataForSEOService {
   }
 
   private processTrendingData(data: any[]): TrendingKeyword[] {
-    return data.map(item => ({
+    return data.map((item, index) => ({
       keyword: item.keyword,
       search_volume: item.search_volume || 0,
-      growth_rate: Math.random() * 100, // 简化实现
+      growth_rate: this.calculateGrowthRate(item.search_volume || 0, index), // 使用确定性计算
       competition_level: this.getCompetitionLevel(item.competition || 0)
     }))
+  }
+
+  private calculateGrowthRate(searchVolume: number, index: number): number {
+    // 使用确定性算法替代 Math.random()，避免 hydration mismatch
+    const seed = searchVolume + index
+    const normalizedSeed = (seed % 100) + 1
+    return Math.min(normalizedSeed, 100)
   }
 
   private getCompetitionLevel(competition: number): string {

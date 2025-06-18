@@ -16,9 +16,12 @@ interface User {
 export default function Navigation() {
   const [user, setUser] = useState<User | null>(null)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
+    setMounted(true)
+    
     // 获取当前用户
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
@@ -67,7 +70,7 @@ export default function Navigation() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            {user && (
+            {mounted && user && (
               <>
                 <Link 
                   href="/dashboard" 
@@ -95,7 +98,7 @@ export default function Navigation() {
 
           {/* User Menu */}
           <div className="hidden md:flex items-center space-x-4">
-            {user ? (
+            {mounted && user ? (
               <div className="flex items-center space-x-2">
                 <div className="flex items-center space-x-2 text-sm">
                   <User className="h-4 w-4" />
@@ -110,7 +113,7 @@ export default function Navigation() {
                   <LogOut className="h-4 w-4" />
                 </Button>
               </div>
-            ) : (
+            ) : mounted ? (
               <div className="flex items-center space-x-2">
                 <Button variant="ghost" asChild>
                   <Link href="/auth/login">登录</Link>
@@ -119,7 +122,7 @@ export default function Navigation() {
                   <Link href="/auth/register">注册</Link>
                 </Button>
               </div>
-            )}
+            ) : null}
           </div>
 
           {/* Mobile menu button */}
@@ -135,7 +138,7 @@ export default function Navigation() {
         </div>
 
         {/* Mobile Navigation */}
-        {isMenuOpen && (
+        {mounted && isMenuOpen && (
           <div className="md:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 border-t">
               {user ? (
