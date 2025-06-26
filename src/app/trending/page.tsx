@@ -5,10 +5,11 @@ import { Button } from '@/components/ui/button'
 import { Select } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Loading } from '@/components/ui/loading'
+import { Loading, PageLoading } from '@/components/ui/loading'
 import { supabase } from '@/lib/supabase'
-import { type TrendingKeyword } from '@/lib/dataforseo'
+import { type TrendingKeyword } from '@/lib/keyword-data'
 import { TrendingUp, Search, BarChart3, Calendar, Target, RefreshCw } from 'lucide-react'
+import { PermissionBanner } from '@/components/membership/permission-guard'
 
 export default function TrendingPage() {
   const [location, setLocation] = useState('China')
@@ -40,7 +41,7 @@ export default function TrendingPage() {
       const result = await response.json()
 
       if (!response.ok) {
-        throw new Error(result.error || '获取热门关键词失败')
+        throw new Error(result.error || '数据接口异常，获取热门关键词失败')
       }
 
       setResults(result.data || [])
@@ -49,7 +50,7 @@ export default function TrendingPage() {
 
     } catch (error: any) {
       console.error('获取热门关键词失败:', error)
-      setError(error.message || '获取热门关键词失败，请重试')
+      setError(error.message || '获取热门关键词失败，数据服务暂时不可用，请稍后重试')
     } finally {
       setLoading(false)
     }
@@ -91,6 +92,9 @@ export default function TrendingPage() {
           </p>
         </div>
 
+        {/* Permission Banner */}
+        <PermissionBanner featureCode="trending_keywords" />
+
         <div className="grid lg:grid-cols-4 gap-8">
           {/* Controls */}
           <div className="lg:col-span-1">
@@ -126,8 +130,8 @@ export default function TrendingPage() {
                 >
                   {loading ? (
                     <>
-                      <Loading size="sm" />
-                      <span className="ml-2">更新中...</span>
+                      <Loading size="sm" variant="dots" />
+                      <span className="ml-2">获取热门趋势...</span>
                     </>
                   ) : (
                     <>
@@ -193,7 +197,9 @@ export default function TrendingPage() {
               </Card>
             )}
 
-            {results.length > 0 ? (
+            {loading ? (
+              <PageLoading text="正在获取热门关键词趋势..." />
+            ) : results.length > 0 ? (
               <div className="space-y-6">
                 {/* Summary Stats */}
                 <div className="grid md:grid-cols-3 gap-4">
@@ -295,7 +301,7 @@ export default function TrendingPage() {
                   </CardContent>
                 </Card>
               </div>
-            ) : !loading && (
+            ) : (
               <Card>
                 <CardContent className="pt-6">
                   <div className="text-center py-12">

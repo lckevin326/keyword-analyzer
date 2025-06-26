@@ -6,10 +6,12 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select } from '@/components/ui/select'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Loading } from '@/components/ui/loading'
+import { Loading, PageLoading, CardLoading } from '@/components/ui/loading'
 import { supabase } from '@/lib/supabase'
-import { type KeywordData } from '@/lib/dataforseo'
+import { type KeywordData } from '@/lib/keyword-data'
 import { Search, Target, BarChart3, TrendingUp, Globe } from 'lucide-react'
+import PermissionGuard, { PermissionBanner } from '@/components/membership/permission-guard'
+import { refreshCredits } from '@/lib/credit-refresh'
 
 export default function SearchPage() {
   const [searchType, setSearchType] = useState<'competitor' | 'industry'>('competitor')
@@ -34,35 +36,34 @@ export default function SearchPage() {
         throw new Error('请先登录')
       }
 
-      // 调用后端API
-      const endpoint = searchType === 'competitor' 
-        ? '/api/keywords/competitor'
-        : '/api/keywords/industry'
-      
+      // 调用后端API (使用统一的搜索接口)
       const requestBody = searchType === 'competitor' 
         ? { domain: query, location }
         : { industry: query, location }
 
-      const response = await fetch(endpoint, {
+      const response = await fetch('/api/keywords/search-direct', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
+          'Content-Type': 'application/json'
         },
+        credentials: 'same-origin',
         body: JSON.stringify(requestBody)
       })
 
       const result = await response.json()
 
       if (!response.ok) {
-        throw new Error(result.error || '搜索失败')
+        throw new Error(result.error || '数据接口异常，搜索失败')
       }
 
       setResults(result.data || [])
+      
+      // 触发积分刷新
+      refreshCredits()
 
     } catch (error: any) {
       console.error('搜索失败:', error)
-      setError(error.message || '搜索失败，请重试')
+      setError(error.message || '搜索失败，数据服务暂时不可用，请稍后重试')
     } finally {
       setLoading(false)
     }
@@ -82,10 +83,13 @@ export default function SearchPage() {
           </p>
         </div>
 
+        {/* Permission Banner */}
+        <PermissionBanner featureCode="competitor_analysis" />
+
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Search Form */}
-          <div className="lg:col-span-1">
-            <Card>
+            {/* Search Form */}
+            <div className="lg:col-span-1">
+              <Card>
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <Search className="h-5 w-5" />
@@ -143,8 +147,8 @@ export default function SearchPage() {
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading ? (
                       <>
-                        <Loading size="sm" />
-                        <span className="ml-2">搜索中...</span>
+                        <Loading size="sm" variant="dots" />
+                        <span className="ml-2">正在分析关键词...</span>
                       </>
                     ) : (
                       <>
@@ -195,7 +199,9 @@ export default function SearchPage() {
               </Card>
             )}
 
-            {results.length > 0 ? (
+            {loading ? (
+              <PageLoading text="正在分析关键词数据，请稍候..." />
+            ) : results.length > 0 ? (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
@@ -241,7 +247,7 @@ export default function SearchPage() {
                   </div>
                 </CardContent>
               </Card>
-            ) : !loading && (
+            ) : (
               <Card>
                 <CardContent className="pt-6">
                   <div className="text-center py-12">
@@ -254,8 +260,8 @@ export default function SearchPage() {
                 </CardContent>
               </Card>
             )}
+            </div>
           </div>
-        </div>
       </div>
     </div>
   )

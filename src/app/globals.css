@@ -65,8 +65,8 @@
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter);
+  --font-mono: ui-monospace, 'Courier New', monospace;
   --radius: var(--radius);
 }
 
@@ -78,4 +78,18 @@ body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
   font-feature-settings: "rlig" 1, "calt" 1;
+}
+
+/* 自定义loading动画样式 */
+.border-3 {
+  border-width: 3px;
+}
+
+/* 支持Tailwind任意值的动画延迟 */
+.\[animation-delay\:150ms\] {
+  animation-delay: 150ms;
+}
+
+.\[animation-delay\:300ms\] {
+  animation-delay: 300ms;
 }

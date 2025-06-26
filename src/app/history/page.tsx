@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
+import { PageLoading } from '@/components/ui/loading'
 import { supabase } from '@/lib/supabase'
 import { formatDateTime } from '@/lib/utils'
 import { History, Search, Target, TrendingUp, Filter, Calendar, Trash2 } from 'lucide-react'
@@ -110,8 +111,19 @@ export default function HistoryPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-8">
+          <div className="mb-8">
+            <div className="flex items-center space-x-2 mb-4">
+              <History className="h-8 w-8 text-primary" />
+              <h1 className="text-3xl font-bold">搜索历史</h1>
+            </div>
+            <p className="text-muted-foreground">
+              查看和管理您的所有关键词搜索记录
+            </p>
+          </div>
+          <PageLoading text="正在加载搜索历史记录..." />
+        </div>
       </div>
     )
   }

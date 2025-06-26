@@ -3,7 +3,26 @@
     "allow": [
       "Bash(npm install:*)",
       "Bash(npm uninstall:*)",
-      "Bash(npm run lint)"
+      "Bash(npm run lint)",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(rg:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npm run build:*)",
+      "Bash(npx tsc:*)",
+      "Bash(node:*)",
+      "Bash(npm run dev:*)",
+      "Bash(curl:*)",
+      "Bash(pgrep:*)",
+      "Bash(pkill:*)",
+      "WebFetch(domain:docs.dataforseo.com)",
+      "WebFetch(domain:dataforseo.com)",
+      "Bash(touch:*)",
+      "Bash(rm:*)",
+      "Bash(true)",
+      "Bash(mv:*)",
+      "Bash(ls:*)",
+      "Bash(PGPASSWORD=$SUPABASE_DB_PASSWORD psql -h $SUPABASE_DB_HOST -U postgres -d postgres -c \"SELECT * FROM feature_permissions WHERE feature_code = ''content_outline'';\")"
     ],
     "deny": []
   }

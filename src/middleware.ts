@@ -34,8 +34,22 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
+  // API路由不需要中间件保护，它们自己处理认证
+  if (request.nextUrl.pathname.startsWith('/api/')) {
+    return response
+  }
+
   // 保护路由：只有登录用户才能访问分析功能
-  const protectedPaths = ['/dashboard', '/search', '/trending']
+  const protectedPaths = [
+    '/dashboard', 
+    '/search', 
+    '/trending', 
+    '/analysis', 
+    '/gap-analysis', 
+    '/top-pages', 
+    '/content-assistant', 
+    '/history'
+  ]
   const isProtectedPath = protectedPaths.some(path => 
     request.nextUrl.pathname.startsWith(path)
   )

@@ -10,6 +10,7 @@
 2. [Supabase](https://supabase.com/) 账户
 3. [Google Cloud Console](https://console.cloud.google.com/) 账户
 4. [DataForSEO](https://dataforseo.com/) 账户
+5. [DeepSeek](https://platform.deepseek.com/) 账户
 
 ## 第一步：配置 Supabase
 
@@ -47,28 +48,166 @@ CREATE POLICY "Users can view own profile" ON profiles FOR SELECT USING (auth.ui
 CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE USING (auth.uid() = id);
 CREATE POLICY "Users can insert own profile" ON profiles FOR INSERT WITH CHECK (auth.uid() = id);
 
--- 关键词搜索记录表
+-- 基础关键词搜索记录表
 CREATE TABLE keyword_searches (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
-  search_type TEXT CHECK (search_type IN ('competitor', 'trending')) NOT NULL,
+  search_type TEXT CHECK (search_type IN ('competitor', 'trending', 'industry')) NOT NULL,
   query TEXT NOT NULL,
   results JSONB NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
 
--- 启用 RLS
-ALTER TABLE keyword_searches ENABLE ROW LEVEL SECURITY;
+-- 深度关键词分析记录表
+CREATE TABLE keyword_analysis (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  keyword TEXT NOT NULL,
+  analysis_data JSONB NOT NULL,
+  location TEXT DEFAULT 'China',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
+);
 
--- 创建策略：用户只能访问自己的搜索记录
+-- 竞争对手差距分析记录表
+CREATE TABLE competitor_analysis (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  your_domain TEXT NOT NULL,
+  competitor_domain TEXT NOT NULL,
+  analysis_results JSONB NOT NULL,
+  location TEXT DEFAULT 'China',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
+);
+
+-- 高流量页面分析记录表
+CREATE TABLE top_pages_analysis (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  domain TEXT NOT NULL,
+  analysis_results JSONB NOT NULL,
+  location TEXT DEFAULT 'China',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
+);
+
+-- AI内容创意记录表
+CREATE TABLE content_ideas (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  content_type TEXT CHECK (content_type IN ('outline', 'titles')) NOT NULL,
+  input_topic TEXT NOT NULL,
+  ai_response TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
+);
+
+-- 关键词排名项目表
+CREATE TABLE keyword_tracking (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  project_name TEXT NOT NULL,
+  domain TEXT NOT NULL,
+  keywords TEXT[] NOT NULL,
+  location TEXT DEFAULT 'China',
+  tracking_frequency TEXT DEFAULT 'manual',
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
+);
+
+-- 关键词排名记录表
+CREATE TABLE keyword_rankings (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  tracking_id UUID REFERENCES keyword_tracking(id) ON DELETE CASCADE NOT NULL,
+  keyword TEXT NOT NULL,
+  position INTEGER,
+  url TEXT,
+  check_date DATE NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
+);
+
+-- 市场动态监控记录表
+CREATE TABLE market_alerts (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  alert_type TEXT NOT NULL,
+  alert_data JSONB NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
+);
+
+-- 启用所有表的 RLS
+ALTER TABLE keyword_searches ENABLE ROW LEVEL SECURITY;
+ALTER TABLE keyword_analysis ENABLE ROW LEVEL SECURITY;
+ALTER TABLE competitor_analysis ENABLE ROW LEVEL SECURITY;
+ALTER TABLE top_pages_analysis ENABLE ROW LEVEL SECURITY;
+ALTER TABLE content_ideas ENABLE ROW LEVEL SECURITY;
+ALTER TABLE keyword_tracking ENABLE ROW LEVEL SECURITY;
+ALTER TABLE keyword_rankings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE market_alerts ENABLE ROW LEVEL SECURITY;
+
+-- 创建 RLS 策略
+-- keyword_searches 策略
 CREATE POLICY "Users can view own searches" ON keyword_searches FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Users can insert own searches" ON keyword_searches FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Users can delete own searches" ON keyword_searches FOR DELETE USING (auth.uid() = user_id);
+
+-- keyword_analysis 策略
+CREATE POLICY "Users can view own analysis" ON keyword_analysis FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own analysis" ON keyword_analysis FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can delete own analysis" ON keyword_analysis FOR DELETE USING (auth.uid() = user_id);
+
+-- competitor_analysis 策略
+CREATE POLICY "Users can view own competitor analysis" ON competitor_analysis FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own competitor analysis" ON competitor_analysis FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- top_pages_analysis 策略
+CREATE POLICY "Users can view own top pages analysis" ON top_pages_analysis FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own top pages analysis" ON top_pages_analysis FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- content_ideas 策略
+CREATE POLICY "Users can view own content ideas" ON content_ideas FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own content ideas" ON content_ideas FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- keyword_tracking 策略
+CREATE POLICY "Users can view own tracking projects" ON keyword_tracking FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own tracking projects" ON keyword_tracking FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own tracking projects" ON keyword_tracking FOR UPDATE USING (auth.uid() = user_id);
+
+-- keyword_rankings 策略
+CREATE POLICY "Users can view own rankings" ON keyword_rankings 
+  FOR SELECT USING (auth.uid() = (SELECT user_id FROM keyword_tracking WHERE id = tracking_id));
+CREATE POLICY "Users can insert own rankings" ON keyword_rankings 
+  FOR INSERT WITH CHECK (auth.uid() = (SELECT user_id FROM keyword_tracking WHERE id = tracking_id));
+
+-- market_alerts 策略
+CREATE POLICY "Users can view own alerts" ON market_alerts FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own alerts" ON market_alerts FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- 创建索引提高查询性能
 CREATE INDEX idx_keyword_searches_user_id ON keyword_searches(user_id);
 CREATE INDEX idx_keyword_searches_created_at ON keyword_searches(created_at DESC);
 CREATE INDEX idx_keyword_searches_search_type ON keyword_searches(search_type);
+
+CREATE INDEX idx_keyword_analysis_user_id ON keyword_analysis(user_id);
+CREATE INDEX idx_keyword_analysis_keyword ON keyword_analysis(keyword);
+CREATE INDEX idx_keyword_analysis_created_at ON keyword_analysis(created_at DESC);
+
+CREATE INDEX idx_competitor_analysis_user_id ON competitor_analysis(user_id);
+CREATE INDEX idx_competitor_analysis_domains ON competitor_analysis(your_domain, competitor_domain);
+
+CREATE INDEX idx_top_pages_analysis_user_id ON top_pages_analysis(user_id);
+CREATE INDEX idx_top_pages_analysis_domain ON top_pages_analysis(domain);
+
+CREATE INDEX idx_content_ideas_user_id ON content_ideas(user_id);
+CREATE INDEX idx_content_ideas_type ON content_ideas(content_type);
+
+CREATE INDEX idx_keyword_tracking_user_id ON keyword_tracking(user_id);
+CREATE INDEX idx_keyword_tracking_active ON keyword_tracking(is_active);
+
+CREATE INDEX idx_keyword_rankings_tracking_id ON keyword_rankings(tracking_id);
+CREATE INDEX idx_keyword_rankings_keyword ON keyword_rankings(keyword);
+CREATE INDEX idx_keyword_rankings_check_date ON keyword_rankings(check_date DESC);
+
+CREATE INDEX idx_market_alerts_user_id ON market_alerts(user_id);
+CREATE INDEX idx_market_alerts_type ON market_alerts(alert_type);
 
 -- 创建函数：自动创建用户资料
 CREATE OR REPLACE FUNCTION public.handle_new_user()
@@ -177,9 +316,43 @@ curl -u 'your_login:your_password' \
   https://api.dataforseo.com/v3/keywords_data/google_ads/search_volume/live
 ```
 
-## 第四步：部署到 Vercel
+## 第四步：获取 DeepSeek AI API 凭据
 
-### 4.1 连接 GitHub 仓库
+### 4.1 注册 DeepSeek 账户
+
+1. 访问 [DeepSeek Platform](https://platform.deepseek.com/)
+2. 注册账户并完成验证
+3. 登录后进入控制台
+
+### 4.2 获取 API 密钥
+
+1. 在控制台中找到 API Keys 页面
+2. 创建新的 API Key
+3. 复制并保存 API Key（注意安全保存，离开页面后无法再次查看）
+4. 确保账户有足够的余额用于 API 调用
+
+### 4.3 测试 API 连接
+
+可以使用以下命令测试 DeepSeek API 连接：
+
+```bash
+curl -X POST 'https://api.deepseek.com/v1/chat/completions' \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer your-api-key' \
+  -d '{
+    "model": "deepseek-chat",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hello, DeepSeek!"
+      }
+    ]
+  }'
+```
+
+## 第五步：部署到 Vercel
+
+### 5.1 连接 GitHub 仓库
 
 1. 将代码推送到 GitHub 仓库
 2. 登录 [Vercel Dashboard](https://vercel.com/)
@@ -187,7 +360,7 @@ curl -u 'your_login:your_password' \
 4. 选择您的 GitHub 仓库
 5. 点击 "Import"
 
-### 4.2 配置环境变量
+### 5.2 配置环境变量
 
 在 Vercel 项目设置中添加以下环境变量：
 
@@ -201,6 +374,9 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 DATAFORSEO_LOGIN=your-dataforseo-login
 DATAFORSEO_PASSWORD=your-dataforseo-password
 
+# DeepSeek AI API 配置
+DEEPSEEK_API_KEY=your-deepseek-api-key
+
 # NextAuth 配置
 NEXTAUTH_URL=https://your-app.vercel.app
 NEXTAUTH_SECRET=your-random-secret-string
@@ -210,7 +386,7 @@ GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
 ```
 
-### 4.3 部署设置
+### 5.3 部署设置
 
 1. 保持默认的构建设置：
    - Build Command: `npm run build`
@@ -219,46 +395,65 @@ GOOGLE_CLIENT_SECRET=your-google-client-secret
 
 2. 点击 "Deploy" 开始部署
 
-### 4.4 配置自定义域名（可选）
+### 5.4 配置自定义域名（可选）
 
 1. 在 Vercel 项目设置中进入 "Domains"
 2. 添加您的自定义域名
 3. 按照指示配置 DNS 记录
 4. 等待域名验证完成
 
-## 第五步：更新回调 URL
+## 第六步：更新回调 URL
 
 部署完成后，需要更新各服务的回调 URL：
 
-### 5.1 更新 Google OAuth 设置
+### 6.1 更新 Google OAuth 设置
 
 1. 返回 Google Cloud Console
 2. 更新 OAuth 客户端的授权重定向 URI：
    - 添加：`https://your-app.vercel.app/auth/callback`
 3. 保存更改
 
-### 5.2 更新 Supabase 设置
+### 6.2 更新 Supabase 设置
 
 1. 在 Supabase 项目设置中找到 "URL Configuration"
 2. 添加您的生产域名到 "Site URL" 列表
 3. 保存设置
 
-## 第六步：验证部署
+## 第七步：验证部署
 
-### 6.1 功能测试
+### 7.1 功能测试
 
 部署完成后，请测试以下功能：
 
+**基础功能:**
 1. ✅ 访问首页
 2. ✅ 用户注册（邮箱和 Google）
 3. ✅ 用户登录
 4. ✅ 仪表板访问
-5. ✅ 竞争对手关键词分析
-6. ✅ 热门趋势查询
-7. ✅ 搜索历史查看
-8. ✅ 用户登出
 
-### 6.2 性能检查
+**模块1：关键词研究中心**
+5. ✅ 基础关键词搜索（竞争对手分析）
+6. ✅ 深度关键词分析（360度分析）
+7. ✅ 热门趋势查询
+
+**模块2：市场竞争分析**
+8. ✅ 关键词差距分析
+9. ✅ 高流量页面分析
+
+**模块3：内容创作助手**
+10. ✅ AI内容大纲生成
+11. ✅ AI标题创意生成
+
+**模块4：追踪与监控中心**
+12. ✅ 关键词排名项目创建
+13. ✅ 关键词排名查询
+14. ✅ 市场动态监控
+
+**通用功能:**
+15. ✅ 搜索历史查看
+16. ✅ 用户登出
+
+### 7.2 性能检查
 
 1. 使用 [Lighthouse](https://developers.google.com/web/tools/lighthouse) 检查性能
 2. 检查页面加载速度
@@ -290,7 +485,21 @@ GOOGLE_CLIENT_SECRET=your-google-client-secret
 2. 检查账户余额
 3. 查看 API 调用限制和配额
 
-### Q3: Supabase 连接问题
+### Q3: DeepSeek AI API 调用失败
+
+**可能原因：**
+- API 密钥错误或已过期
+- 账户余额不足
+- API 速率限制
+- 网络连接问题
+
+**解决方案：**
+1. 验证 DeepSeek API 密钥是否正确
+2. 检查 DeepSeek 账户余额
+3. 查看 API 调用频率是否超限
+4. 检查网络连接和防火墙设置
+
+### Q4: Supabase 连接问题
 
 **可能原因：**
 - 环境变量配置错误
@@ -302,7 +511,7 @@ GOOGLE_CLIENT_SECRET=your-google-client-secret
 2. 确保数据库表已正确创建
 3. 验证 RLS 策略配置
 
-### Q4: 部署后页面空白
+### Q5: 部署后页面空白
 
 **可能原因：**
 - 环境变量缺失

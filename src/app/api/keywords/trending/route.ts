@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
-import DataForSEOService from '@/lib/dataforseo'
+import DataForSEOService from '@/lib/keyword-data'
 
 export async function GET(request: NextRequest) {
   try {
@@ -17,19 +17,19 @@ export async function GET(request: NextRequest) {
     const location = searchParams.get('location') || 'China'
 
     // 检查环境变量
-    const dataForSEOLogin = process.env.DATAFORSEO_LOGIN
-    const dataForSEOPassword = process.env.DATAFORSEO_PASSWORD
+    const dataApiLogin = process.env.DATAFORSEO_LOGIN
+    const dataApiPassword = process.env.DATAFORSEO_PASSWORD
     
-    if (!dataForSEOLogin || !dataForSEOPassword) {
+    if (!dataApiLogin || !dataApiPassword) {
       return NextResponse.json({ 
-        error: 'DataForSEO API 配置错误，请联系管理员' 
+        error: '数据源 API 配置错误，请联系管理员' 
       }, { status: 500 })
     }
 
-    // 初始化 DataForSEO 服务
+    // 初始化数据服务
     const dataForSEOService = new DataForSEOService({
-      login: dataForSEOLogin,
-      password: dataForSEOPassword
+      login: dataApiLogin,
+      password: dataApiPassword
     })
 
     // 调用 API 获取热门关键词

@@ -6,7 +6,9 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { supabase } from '@/lib/supabase'
 import { formatDateTime } from '@/lib/utils'
+import { PageLoading } from '@/components/ui/loading'
 import { Search, TrendingUp, BarChart3, Plus, History, Target } from 'lucide-react'
+import UserStatus from '@/components/membership/user-status'
 
 interface SearchHistory {
   id: string
@@ -63,8 +65,10 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-8">
+          <PageLoading text="正在加载仪表板数据..." />
+        </div>
       </div>
     )
   }
@@ -82,55 +86,160 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        {/* Quick Actions */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-            <Link href="/search">
-              <CardHeader className="flex flex-row items-center space-y-0 pb-2">
-                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center mr-4">
-                  <Target className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <CardTitle className="text-lg">竞争对手分析</CardTitle>
-                  <CardDescription>
-                    分析对标产品和行业关键词
-                  </CardDescription>
-                </div>
-              </CardHeader>
-            </Link>
-          </Card>
+        {/* User Status - Credits and Membership */}
+        <div className="mb-8">
+          <UserStatus />
+        </div>
 
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-            <Link href="/trending">
-              <CardHeader className="flex flex-row items-center space-y-0 pb-2">
-                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center mr-4">
-                  <TrendingUp className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <CardTitle className="text-lg">热门趋势</CardTitle>
-                  <CardDescription>
-                    查看最近一周的热门关键词
-                  </CardDescription>
-                </div>
-              </CardHeader>
-            </Link>
-          </Card>
+        {/* Core Modules */}
+        <div className="space-y-8">
+          {/* Module 1: 关键词研究中心 */}
+          <div>
+            <h2 className="text-xl font-semibold mb-4 flex items-center space-x-2">
+              <Search className="h-5 w-5 text-primary" />
+              <span>关键词研究中心</span>
+            </h2>
+            <div className="grid md:grid-cols-3 gap-6">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                <Link href="/search">
+                  <CardHeader className="flex flex-row items-center space-y-0 pb-2">
+                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                      <Search className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg">基础关键词搜索</CardTitle>
+                      <CardDescription>
+                        竞争对手和行业关键词发现
+                      </CardDescription>
+                    </div>
+                  </CardHeader>
+                </Link>
+              </Card>
 
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-            <Link href="/history">
-              <CardHeader className="flex flex-row items-center space-y-0 pb-2">
-                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center mr-4">
-                  <History className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <CardTitle className="text-lg">搜索历史</CardTitle>
-                  <CardDescription>
-                    查看您的所有搜索记录
-                  </CardDescription>
-                </div>
-              </CardHeader>
-            </Link>
-          </Card>
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                <Link href="/analysis">
+                  <CardHeader className="flex flex-row items-center space-y-0 pb-2">
+                    <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
+                      <BarChart3 className="h-5 w-5 text-purple-600" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg">关键词深度分析</CardTitle>
+                      <CardDescription>
+                        360度全方位关键词数据分析
+                      </CardDescription>
+                    </div>
+                  </CardHeader>
+                </Link>
+              </Card>
+
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                <Link href="/trending">
+                  <CardHeader className="flex flex-row items-center space-y-0 pb-2">
+                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+                      <TrendingUp className="h-5 w-5 text-green-600" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg">热门趋势监控</CardTitle>
+                      <CardDescription>
+                        实时追踪市场热门关键词
+                      </CardDescription>
+                    </div>
+                  </CardHeader>
+                </Link>
+              </Card>
+            </div>
+          </div>
+
+          {/* Module 2: 市场竞争分析 */}
+          <div>
+            <h2 className="text-xl font-semibold mb-4 flex items-center space-x-2">
+              <Target className="h-5 w-5 text-primary" />
+              <span>市场竞争分析</span>
+            </h2>
+            <div className="grid md:grid-cols-2 gap-6">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                <Link href="/gap-analysis">
+                  <CardHeader className="flex flex-row items-center space-y-0 pb-2">
+                    <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center mr-4">
+                      <Target className="h-5 w-5 text-orange-600" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg">关键词差距分析</CardTitle>
+                      <CardDescription>
+                        发现竞争对手的关键词机会
+                      </CardDescription>
+                    </div>
+                  </CardHeader>
+                </Link>
+              </Card>
+
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                <Link href="/top-pages">
+                  <CardHeader className="flex flex-row items-center space-y-0 pb-2">
+                    <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center mr-4">
+                      <BarChart3 className="h-5 w-5 text-red-600" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg">高流量页面分析</CardTitle>
+                      <CardDescription>
+                        学习竞争对手最成功的内容
+                      </CardDescription>
+                    </div>
+                  </CardHeader>
+                </Link>
+              </Card>
+            </div>
+          </div>
+
+          {/* Module 3: 内容创作助手 */}
+          <div>
+            <h2 className="text-xl font-semibold mb-4 flex items-center space-x-2">
+              <span className="w-5 h-5 text-primary">✍️</span>
+              <span>内容创作助手</span>
+            </h2>
+            <div className="grid md:grid-cols-1 gap-6">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                <Link href="/content-assistant">
+                  <CardHeader className="flex flex-row items-center space-y-0 pb-2">
+                    <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center mr-4">
+                      <span className="text-lg">🤖</span>
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg">AI内容创作工坊</CardTitle>
+                      <CardDescription>
+                        AI驱动的内容大纲生成和标题创意工坊
+                      </CardDescription>
+                    </div>
+                  </CardHeader>
+                </Link>
+              </Card>
+            </div>
+          </div>
+
+          {/* Quick Access */}
+          <div>
+            <h2 className="text-xl font-semibold mb-4 flex items-center space-x-2">
+              <History className="h-5 w-5 text-primary" />
+              <span>快速访问</span>
+            </h2>
+            <div className="grid md:grid-cols-1 gap-6">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                <Link href="/history">
+                  <CardHeader className="flex flex-row items-center space-y-0 pb-2">
+                    <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center mr-4">
+                      <History className="h-5 w-5 text-gray-600" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg">搜索历史管理</CardTitle>
+                      <CardDescription>
+                        查看和管理您的所有分析记录
+                      </CardDescription>
+                    </div>
+                  </CardHeader>
+                </Link>
+              </Card>
+            </div>
+          </div>
         </div>
 
         {/* Stats Cards */}
