@@ -22,7 +22,10 @@
       "Bash(true)",
       "Bash(mv:*)",
       "Bash(ls:*)",
-      "Bash(PGPASSWORD=$SUPABASE_DB_PASSWORD psql -h $SUPABASE_DB_HOST -U postgres -d postgres -c \"SELECT * FROM feature_permissions WHERE feature_code = ''content_outline'';\")"
+      "Bash(PGPASSWORD=$SUPABASE_DB_PASSWORD psql -h $SUPABASE_DB_HOST -U postgres -d postgres -c \"SELECT * FROM feature_permissions WHERE feature_code = ''content_outline'';\")",
+      "Bash(PORT=3001 npm run dev)",
+      "Bash(npm run start:*)",
+      "Bash(sed:*)"
     ],
     "deny": []
   }

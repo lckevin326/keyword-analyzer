@@ -18,6 +18,7 @@ export async function POST(request: NextRequest) {
     // 解析请求数据
     const { 
       targetKeyword,
+      selectedTitle, // 新增：选中的标题
       targetAudience,
       searchIntent,
       commonThemes = [],
@@ -65,6 +66,7 @@ export async function POST(request: NextRequest) {
     // 调用 API 生成内容大纲
     const outline = await deepSeekService.generateContentOutline({
       target_keyword: targetKeyword,
+      selected_title: selectedTitle, // 传递选中的标题
       target_audience: targetAudience,
       search_intent: searchIntent,
       common_themes: commonThemes,

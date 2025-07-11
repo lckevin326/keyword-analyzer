@@ -16,23 +16,33 @@ import {
 import PermissionGuard, { PermissionBanner } from '@/components/membership/permission-guard'
 import { refreshCredits } from '@/lib/credit-refresh'
 
-type ActiveTab = 'outline' | 'titles'
+type ActiveTab = 'titles' | 'outline'
+
+// 新增数据获取相关类型
+interface SerpData {
+  people_also_ask: string[]
+  related_searches: string[]
+  common_themes: string[]
+}
 
 export default function ContentAssistantPage() {
-  const [activeTab, setActiveTab] = useState<ActiveTab>('outline')
+  const [activeTab, setActiveTab] = useState<ActiveTab>('titles')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  // Outline generation state
+  // Outline generation state - 修改为支持从标题生成和独立生成两种模式
   const [outlineForm, setOutlineForm] = useState({
     targetKeyword: '',
+    selectedTitle: '', // 新增：从标题生成时使用
     targetAudience: 'content marketers',
     searchIntent: 'informational' as 'informational' | 'commercial' | 'transactional',
-    commonThemes: '',
-    uniqueAngles: '',
-    userQuestions: ''
+    selectedCommonThemes: [] as string[], // 修改为多选
+    selectedUniqueAngles: [] as string[], // 修改为多选
+    selectedUserQuestions: [] as string[] // 修改为多选
   })
   const [outlineResult, setOutlineResult] = useState<ContentOutlineResponse | null>(null)
+  const [serpData, setSerpData] = useState<SerpData | null>(null) // 存储从DataForSEO获取的数据
+  const [fetchingSerpData, setFetchingSerpData] = useState(false)
 
   // Title generation state
   const [titleForm, setTitleForm] = useState({
@@ -40,6 +50,68 @@ export default function ContentAssistantPage() {
     coreAngle: 'guide'
   })
   const [titleResult, setTitleResult] = useState<TitleGenerationResponse | null>(null)
+
+  // 获取SERP数据用于大纲生成
+  const fetchSerpData = async (keyword: string) => {
+    setFetchingSerpData(true)
+    try {
+      // 模拟从DataForSEO获取数据（实际项目中应该调用真实API）
+      await new Promise(resolve => setTimeout(resolve, 1000)) // 模拟API延迟
+      
+      // 这里应该调用DataForSEO API获取相关搜索、PAA等数据
+      // 目前使用模拟数据
+      const mockSerpData: SerpData = {
+        people_also_ask: [
+          `${keyword}是什么？`,
+          `如何学习${keyword}？`,
+          `${keyword}有什么优势？`,
+          `${keyword}需要多长时间？`,
+          `${keyword}的最佳实践是什么？`,
+          `${keyword}和其他方法的区别？`,
+          `${keyword}适合初学者吗？`,
+          `${keyword}的常见错误有哪些？`
+        ],
+        related_searches: [
+          `${keyword}教程`,
+          `${keyword}工具`,
+          `${keyword}案例`,
+          `${keyword}技巧`,
+          `${keyword}趋势`,
+          `${keyword}对比`,
+          `${keyword}指南`,
+          `${keyword}策略`
+        ],
+        common_themes: [
+          `${keyword}基础概念`,
+          `${keyword}实施步骤`,
+          `${keyword}优势分析`,
+          `${keyword}工具推荐`,
+          `${keyword}案例研究`,
+          `${keyword}常见问题`,
+          `${keyword}最佳实践`,
+          `${keyword}未来趋势`
+        ]
+      }
+      
+      setSerpData(mockSerpData)
+    } catch (error) {
+      console.error('获取SERP数据失败:', error)
+    } finally {
+      setFetchingSerpData(false)
+    }
+  }
+
+  // 从标题生成大纲
+  const generateOutlineFromTitle = (title: string, keyword: string) => {
+    setOutlineForm(prev => ({
+      ...prev,
+      selectedTitle: title,
+      targetKeyword: keyword
+    }))
+    setActiveTab('outline')
+    // 获取SERP数据
+    fetchSerpData(keyword)
+  }
 
   const handleOutlineGeneration = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -56,10 +128,10 @@ export default function ContentAssistantPage() {
         throw new Error('请先登录')
       }
 
-      // 处理输入数据
-      const commonThemes = outlineForm.commonThemes.split('\n').filter(t => t.trim())
-      const uniqueAngles = outlineForm.uniqueAngles.split('\n').filter(a => a.trim())
-      const userQuestions = outlineForm.userQuestions.split('\n').filter(q => q.trim())
+      // 处理输入数据 - 使用选中的数组数据
+      const commonThemes = outlineForm.selectedCommonThemes
+      const uniqueAngles = outlineForm.selectedUniqueAngles
+      const userQuestions = outlineForm.selectedUserQuestions
 
       // 调用后端API (使用修复版本)
       const response = await fetch('/api/content/outline-direct', {
@@ -70,6 +142,7 @@ export default function ContentAssistantPage() {
         credentials: 'same-origin',
         body: JSON.stringify({
           targetKeyword: outlineForm.targetKeyword,
+          selectedTitle: outlineForm.selectedTitle, // 传递选择的标题
           targetAudience: outlineForm.targetAudience,
           searchIntent: outlineForm.searchIntent,
           commonThemes,
@@ -148,6 +221,34 @@ export default function ContentAssistantPage() {
     navigator.clipboard.writeText(text)
   }
 
+  // 处理多选框选择
+  const handleThemeSelection = (theme: string, checked: boolean) => {
+    setOutlineForm(prev => ({
+      ...prev,
+      selectedCommonThemes: checked 
+        ? [...prev.selectedCommonThemes, theme]
+        : prev.selectedCommonThemes.filter(t => t !== theme)
+    }))
+  }
+
+  const handleAngleSelection = (angle: string, checked: boolean) => {
+    setOutlineForm(prev => ({
+      ...prev,
+      selectedUniqueAngles: checked 
+        ? [...prev.selectedUniqueAngles, angle]
+        : prev.selectedUniqueAngles.filter(a => a !== angle)
+    }))
+  }
+
+  const handleQuestionSelection = (question: string, checked: boolean) => {
+    setOutlineForm(prev => ({
+      ...prev,
+      selectedUserQuestions: checked 
+        ? [...prev.selectedUserQuestions, question]
+        : prev.selectedUserQuestions.filter(q => q !== question)
+    }))
+  }
+
   const getAppealColor = (score: number) => {
     if (score >= 90) return 'text-green-600'
     if (score >= 80) return 'text-blue-600'
@@ -190,19 +291,6 @@ export default function ContentAssistantPage() {
           <div className="flex space-x-1 bg-muted p-1 rounded-lg mb-8">
           <button
             className={`flex-1 py-3 px-6 rounded-md text-sm font-medium transition-colors ${
-              activeTab === 'outline' 
-                ? 'bg-background text-foreground shadow-sm' 
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
-            onClick={() => setActiveTab('outline')}
-          >
-            <div className="flex items-center justify-center space-x-2">
-              <FileText className="h-4 w-4" />
-              <span>AI内容大纲生成</span>
-            </div>
-          </button>
-          <button
-            className={`flex-1 py-3 px-6 rounded-md text-sm font-medium transition-colors ${
               activeTab === 'titles' 
                 ? 'bg-background text-foreground shadow-sm' 
                 : 'text-muted-foreground hover:text-foreground'
@@ -211,7 +299,20 @@ export default function ContentAssistantPage() {
           >
             <div className="flex items-center justify-center space-x-2">
               <Lightbulb className="h-4 w-4" />
-              <span>标题创意工坊</span>
+              <span>1. 标题创意工坊</span>
+            </div>
+          </button>
+          <button
+            className={`flex-1 py-3 px-6 rounded-md text-sm font-medium transition-colors ${
+              activeTab === 'outline' 
+                ? 'bg-background text-foreground shadow-sm' 
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+            onClick={() => setActiveTab('outline')}
+          >
+            <div className="flex items-center justify-center space-x-2">
+              <FileText className="h-4 w-4" />
+              <span>2. AI内容大纲生成</span>
             </div>
           </button>
         </div>
@@ -224,7 +325,7 @@ export default function ContentAssistantPage() {
           </Card>
         )}
 
-        {/* Content Outline Generator */}
+        {/* Outline Generator */}
         {activeTab === 'outline' && (
           <div className="grid lg:grid-cols-3 gap-8">
             <div className="lg:col-span-1">
@@ -240,6 +341,16 @@ export default function ContentAssistantPage() {
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleOutlineGeneration} className="space-y-4">
+                    {/* 显示选择的标题 */}
+                    {outlineForm.selectedTitle && (
+                      <div className="space-y-2">
+                        <Label>选择的标题</Label>
+                        <div className="p-3 bg-muted/50 rounded-md text-sm">
+                          {outlineForm.selectedTitle}
+                        </div>
+                      </div>
+                    )}
+
                     <div className="space-y-2">
                       <Label htmlFor="targetKeyword">目标关键词</Label>
                       <Input
@@ -247,7 +358,13 @@ export default function ContentAssistantPage() {
                         type="text"
                         placeholder="例如：SEO优化技巧"
                         value={outlineForm.targetKeyword}
-                        onChange={(e) => setOutlineForm({...outlineForm, targetKeyword: e.target.value})}
+                        onChange={(e) => {
+                          setOutlineForm({...outlineForm, targetKeyword: e.target.value})
+                          // 如果输入了新关键词，获取SERP数据
+                          if (e.target.value.trim()) {
+                            fetchSerpData(e.target.value.trim())
+                          }
+                        }}
                         required
                       />
                     </div>
@@ -279,37 +396,85 @@ export default function ContentAssistantPage() {
                       </Select>
                     </div>
 
+                    {/* 常见主题多选框 */}
                     <div className="space-y-2">
-                      <Label htmlFor="commonThemes">常见主题 (每行一个)</Label>
-                      <textarea
-                        id="commonThemes"
-                        className="w-full p-2 border rounded-md min-h-[100px] text-sm"
-                        placeholder="例如：&#10;什么是SEO&#10;SEO的好处&#10;如何开始SEO"
-                        value={outlineForm.commonThemes}
-                        onChange={(e) => setOutlineForm({...outlineForm, commonThemes: e.target.value})}
-                      />
+                      <Label>常见主题 {fetchingSerpData && <span className="text-xs text-muted-foreground">(正在获取数据...)</span>}</Label>
+                      <div className="max-h-32 overflow-y-auto border rounded-md p-2 space-y-2">
+                        {serpData?.common_themes.map((theme, index) => (
+                          <label key={index} className="flex items-center space-x-2 text-sm">
+                            <input
+                              type="checkbox"
+                              checked={outlineForm.selectedCommonThemes.includes(theme)}
+                              onChange={(e) => handleThemeSelection(theme, e.target.checked)}
+                              className="rounded"
+                            />
+                            <span>{theme}</span>
+                          </label>
+                        )) || (
+                          <div className="text-sm text-muted-foreground">
+                            请输入关键词获取相关主题建议
+                          </div>
+                        )}
+                      </div>
+                      {outlineForm.selectedCommonThemes.length > 0 && (
+                        <div className="text-xs text-muted-foreground">
+                          已选择 {outlineForm.selectedCommonThemes.length} 个主题
+                        </div>
+                      )}
                     </div>
 
+                    {/* 独特角度多选框 */}
                     <div className="space-y-2">
-                      <Label htmlFor="uniqueAngles">独特角度 (每行一个)</Label>
-                      <textarea
-                        id="uniqueAngles"
-                        className="w-full p-2 border rounded-md min-h-[80px] text-sm"
-                        placeholder="例如：&#10;2024年最新SEO趋势&#10;AI对SEO的影响"
-                        value={outlineForm.uniqueAngles}
-                        onChange={(e) => setOutlineForm({...outlineForm, uniqueAngles: e.target.value})}
-                      />
+                      <Label>独特角度</Label>
+                      <div className="max-h-32 overflow-y-auto border rounded-md p-2 space-y-2">
+                        {serpData?.related_searches.map((angle, index) => (
+                          <label key={index} className="flex items-center space-x-2 text-sm">
+                            <input
+                              type="checkbox"
+                              checked={outlineForm.selectedUniqueAngles.includes(angle)}
+                              onChange={(e) => handleAngleSelection(angle, e.target.checked)}
+                              className="rounded"
+                            />
+                            <span>{angle}</span>
+                          </label>
+                        )) || (
+                          <div className="text-sm text-muted-foreground">
+                            请输入关键词获取相关角度建议
+                          </div>
+                        )}
+                      </div>
+                      {outlineForm.selectedUniqueAngles.length > 0 && (
+                        <div className="text-xs text-muted-foreground">
+                          已选择 {outlineForm.selectedUniqueAngles.length} 个角度
+                        </div>
+                      )}
                     </div>
 
+                    {/* 用户问题多选框 */}
                     <div className="space-y-2">
-                      <Label htmlFor="userQuestions">用户常问问题 (每行一个)</Label>
-                      <textarea
-                        id="userQuestions"
-                        className="w-full p-2 border rounded-md min-h-[80px] text-sm"
-                        placeholder="例如：&#10;SEO需要多长时间见效？&#10;SEO和SEM有什么区别？"
-                        value={outlineForm.userQuestions}
-                        onChange={(e) => setOutlineForm({...outlineForm, userQuestions: e.target.value})}
-                      />
+                      <Label>用户常问问题</Label>
+                      <div className="max-h-32 overflow-y-auto border rounded-md p-2 space-y-2">
+                        {serpData?.people_also_ask.map((question, index) => (
+                          <label key={index} className="flex items-center space-x-2 text-sm">
+                            <input
+                              type="checkbox"
+                              checked={outlineForm.selectedUserQuestions.includes(question)}
+                              onChange={(e) => handleQuestionSelection(question, e.target.checked)}
+                              className="rounded"
+                            />
+                            <span>{question}</span>
+                          </label>
+                        )) || (
+                          <div className="text-sm text-muted-foreground">
+                            请输入关键词获取常见问题建议
+                          </div>
+                        )}
+                      </div>
+                      {outlineForm.selectedUserQuestions.length > 0 && (
+                        <div className="text-xs text-muted-foreground">
+                          已选择 {outlineForm.selectedUserQuestions.length} 个问题
+                        </div>
+                      )}
                     </div>
 
                     <Button type="submit" className="w-full" disabled={loading}>
@@ -519,14 +684,25 @@ export default function ContentAssistantPage() {
                         <div key={index} className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
                           <div className="flex items-start justify-between mb-3">
                             <h3 className="font-medium text-lg flex-1 pr-4">{title.title}</h3>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => copyToClipboard(title.title)}
-                              className="opacity-60 hover:opacity-100"
-                            >
-                              <Copy className="h-3 w-3" />
-                            </Button>
+                            <div className="flex items-center space-x-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => generateOutlineFromTitle(title.title, titleForm.targetKeyword)}
+                                className="text-primary border-primary hover:bg-primary hover:text-primary-foreground"
+                              >
+                                <FileText className="h-3 w-3 mr-1" />
+                                生成大纲
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => copyToClipboard(title.title)}
+                                className="opacity-60 hover:opacity-100"
+                              >
+                                <Copy className="h-3 w-3" />
+                              </Button>
+                            </div>
                           </div>
                           
                           <div className="flex items-center space-x-4 text-sm">
@@ -577,8 +753,8 @@ export default function ContentAssistantPage() {
                 </Card>
               )}
             </div>
-            </div>
-          )}
+          </div>
+        )}
       </div>
     </div>
   )

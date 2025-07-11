@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
-import CreditDisplay from '@/components/credit-display'
-import MembershipStatus from '@/components/membership-status'
+import OptimizedCreditDisplay from '@/components/optimized-credit-display'
+import OptimizedMembershipStatus from '@/components/optimized-membership-status'
 import { Search, TrendingUp, Menu, X, User, Target, PenTool, History, Crown, CreditCard } from 'lucide-react'
 
 interface User {
@@ -56,8 +56,17 @@ export default function Navigation() {
   }, [])
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    router.push('/')
+    try {
+      await supabase.auth.signOut()
+      // 确保认证状态已清除后再跳转
+      setUser(null)
+      // 使用 replace 而不是 push，避免用户通过浏览器后退按钮回到受保护页面
+      router.replace('/')
+    } catch (error) {
+      console.error('退出登录失败:', error)
+      // 即使出错也强制跳转到首页
+      router.replace('/')
+    }
   }
 
   return (
@@ -146,10 +155,10 @@ export default function Navigation() {
             {mounted && user ? (
               <div className="flex items-center space-x-3">
                 {/* Membership Status with integrated actions */}
-                <MembershipStatus />
+                <OptimizedMembershipStatus />
                 
                 {/* Credits Display with integrated actions */}
-                <CreditDisplay />
+                <OptimizedCreditDisplay />
                 
                 {/* User Info and Logout */}
                 <div className="relative group">
@@ -209,8 +218,8 @@ export default function Navigation() {
                   {/* Mobile Status Display */}
                   <div className="px-3 py-3 border-b border-muted">
                     <div className="flex items-center justify-between mb-2">
-                      <MembershipStatus />
-                      <CreditDisplay />
+                      <OptimizedMembershipStatus />
+                      <OptimizedCreditDisplay />
                     </div>
                   </div>
                   

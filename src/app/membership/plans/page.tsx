@@ -1,5 +1,5 @@
 import PlanComparison from '@/components/membership/plan-comparison'
-import UserStatus from '@/components/membership/user-status'
+import OptimizedUserStatus from '@/components/membership/optimized-user-status'
 
 export default function MembershipPlansPage() {
   return (
@@ -15,7 +15,7 @@ export default function MembershipPlansPage() {
 
         {/* 用户当前状态 */}
         <div className="mb-8">
-          <UserStatus />
+          <OptimizedUserStatus />
         </div>
 
         {/* 会员方案比较 */}

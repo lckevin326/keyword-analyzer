@@ -131,9 +131,20 @@ export default function LoginPage() {
                 </div>
               )}
 
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? <Loading size="sm" /> : '登录'}
-              </Button>
+              <div className="flex items-center justify-between">
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? <Loading size="sm" /> : '登录'}
+                </Button>
+              </div>
+
+              <div className="text-center">
+                <Link 
+                  href="/auth/forgot-password" 
+                  className="text-sm text-primary underline-offset-4 hover:underline"
+                >
+                  忘记密码？
+                </Link>
+              </div>
             </form>
 
             <div className="relative">

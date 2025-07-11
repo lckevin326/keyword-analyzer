@@ -8,6 +8,7 @@ export interface DeepSeekConfig {
 
 export interface ContentOutlineRequest {
   target_keyword: string
+  selected_title?: string // 新增：可选的选中标题
   target_audience: string
   search_intent: 'informational' | 'commercial' | 'transactional'
   common_themes: string[]
@@ -125,6 +126,10 @@ class DeepSeekService {
   }
 
   private buildOutlinePrompt(request: ContentOutlineRequest): string {
+    const titleSection = request.selected_title 
+      ? `- **选定标题 (Selected Title):** ${request.selected_title}`
+      : '';
+
     return `
 # 角色与目标 (ROLE & GOAL)
 你是一位顶级的SEO内容策略专家。你的任务是根据我提供的上下文数据，创建一个结构完整、逻辑清晰、且经过SEO优化的文章大纲。这份大纲将作为清晰的写作蓝图，帮助作者写出一篇能够在搜索引擎上获得良好排名的文章。
@@ -134,6 +139,7 @@ class DeepSeekService {
 
 ### 1. 核心信息
 - **目标关键词 (Target Keyword):** ${request.target_keyword}
+${titleSection}
 - **目标受众 (Target Audience):** ${request.target_audience}
 - **搜索意图 (Search Intent):** ${request.search_intent}
 
@@ -149,10 +155,10 @@ ${request.user_questions.map(q => `- ${q}`).join('\n')}
 # 指令 (INSTRUCTIONS)
 请基于以上所有信息，生成文章大纲。请严格遵守以下规则：
 1.  **结构:** 使用 Markdown 格式，包含一个H1标题，多个H2标题，以及相关的H3标题。
-2.  **H1标题:** H1标题必须引人注目，并包含 "${request.target_keyword}"。
-3.  **逻辑流畅:** 大纲的逻辑必须顺畅，从基础概念开始，逐步深入到更高级或具体的话题。
+2.  **H1标题处理:** ${request.selected_title ? `使用选定的标题 "${request.selected_title}" 作为H1标题，确保它包含目标关键词 "${request.target_keyword}"。` : `H1标题必须引人注目，并包含 "${request.target_keyword}"`}
+3.  **逻辑流畅:** 大纲的逻辑必须顺畅，从基础概念开始，逐步深入到更高级或具体的话题。${request.selected_title ? `大纲结构应与选定标题的承诺和期望保持一致。` : ''}
 4.  **整合问题:** 将"用户问题"的答案无缝地整合到相关的H2或H3部分中，而不是简单地罗列问题。
-5.  **覆盖全面:** 确保大纲覆盖了竞品分析中的所有"常见主题"。可以考虑加入一个"独特角度"，使内容脱颖而出。
+5.  **覆盖全面:** 确保大纲覆盖了所选择的"常见主题"和"独特角度"，使内容脱颖而出。
 6.  **实践性内容:** 包含对 ${request.target_audience} 有实际价值的部分，例如"操作步骤"、"最佳实践"或"要避免的常见错误"。
 7.  **结论:** 以一个"结论"或"核心要点"部分作为结尾，总结文章的主要观点。
 
