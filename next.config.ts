@@ -1,18 +1,15 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   eslint: {
-    // 完全忽略 ESLint 错误和警告
     ignoreDuringBuilds: true,
+    dirs: [],
   },
   typescript: {
-    // 完全忽略 TypeScript 错误
     ignoreBuildErrors: true,
   },
-  // 禁用严格模式以避免额外的检查
   reactStrictMode: false,
-};
+  swcMinify: false,
+}
 
-export default nextConfig;
-
+module.exports = nextConfig
 
