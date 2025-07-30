@@ -8,7 +8,7 @@ import { Select } from '@/components/ui/select'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Loading, PageLoading } from '@/components/ui/loading'
 import { supabase } from '@/lib/supabase'
-import { type GapAnalysisResult } from '@/lib/keyword-data'
+import { type CompetitorGapAnalysis } from '@/lib/keyword-data'
 import { 
   Target, BarChart3, 
   Users, Trophy, Lightbulb
@@ -21,11 +21,16 @@ export default function GapAnalysisPage() {
   const [competitorDomains, setCompetitorDomains] = useState(['', '', ''])
   const [location, setLocation] = useState('China')
   const [loading, setLoading] = useState(false)
-  const [analysis, setAnalysis] = useState<GapAnalysisResult | null>(null)
+  const [analysis, setAnalysis] = useState<CompetitorGapAnalysis | null>(null)
   const [error, setError] = useState('')
   const [activeTab, setActiveTab] = useState<'shared' | 'advantage' | 'opportunity'>('opportunity')
 
-  const analyzeGap = async (formData: Record<string, unknown>) => {
+  const analyzeGap = async (formData: {
+    projectName: string
+    ownDomain: string
+    competitorDomains: string[]
+    location: string
+  }) => {
     if (!formData.ownDomain.trim() || !formData.competitorDomains.length) {
       setError('请至少输入一个竞争对手域名')
       return
@@ -211,7 +216,16 @@ export default function GapAnalysisPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleAnalysis} className="space-y-4">
+                <form onSubmit={(e) => {
+                  e.preventDefault()
+                  const formData = {
+                    projectName,
+                    ownDomain,
+                    competitorDomains: competitorDomains.filter(domain => domain.trim()),
+                    location
+                  }
+                  analyzeGap(formData)
+                }} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="projectName">项目名称</Label>
                     <Input

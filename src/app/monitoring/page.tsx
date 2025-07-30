@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Select } from '@/components/ui/select'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Loading, PageLoading } from '@/components/ui/loading'
 import { supabase } from '@/lib/supabase'
+import { type MarketMonitoringResponse } from '@/lib/keyword-data'
 import { 
   Search, BarChart3, 
   ArrowDown, ArrowUp, Users, TrendingUp, RefreshCw,

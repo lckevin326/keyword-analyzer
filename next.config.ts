@@ -8,10 +8,6 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   reactStrictMode: false,
-  experimental: {
-    forceSwcTransforms: true,
-  },
-  generateStaticParams: false,
 }
 
 module.exports = nextConfig
