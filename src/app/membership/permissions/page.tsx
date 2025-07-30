@@ -1,3 +1,5 @@
+'use client'
+
 import PermissionStatus from '@/components/membership/permission-status'
 import UserStatus from '@/components/membership/user-status'
 import Link from 'next/link'

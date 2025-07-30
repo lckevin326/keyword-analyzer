@@ -1,3 +1,5 @@
+'use client'
+
 import PlanComparison from '@/components/membership/plan-comparison'
 import OptimizedUserStatus from '@/components/membership/optimized-user-status'
 

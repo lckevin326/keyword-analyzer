@@ -1,3 +1,5 @@
+'use client'
+
 import CreditPurchase from '@/components/membership/credit-purchase'
 import UserStatus from '@/components/membership/user-status'
 

@@ -113,7 +113,7 @@ export default function UsageStatsPage() {
           <CardContent className="p-6">
             <div className="text-center">
               <p className="text-red-600 mb-4">{error}</p>
-              <Button onClick={fetchUsageData}>
+              <Button onClick={() => fetchUsageData()}>
                 <RefreshCw className="h-4 w-4 mr-2" />
                 重试
               </Button>
@@ -238,7 +238,7 @@ export default function UsageStatsPage() {
                 <option value="page_analysis">页面分析</option>
                 <option value="ranking_check">排名查询</option>
               </select>
-              <Button variant="outline" size="sm" onClick={fetchUsageData}>
+              <Button variant="outline" size="sm" onClick={() => fetchUsageData()}>
                 <RefreshCw className="h-4 w-4" />
               </Button>
             </div>
