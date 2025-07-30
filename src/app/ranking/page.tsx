@@ -1,5 +1,3 @@
-'use client'
-
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,8 +8,8 @@ import { Loading, PageLoading, CardLoading } from '@/components/ui/loading'
 import { supabase } from '@/lib/supabase'
 import { type RankingCheckResponse, type KeywordRankingProject } from '@/lib/keyword-data'
 import { 
-  Plus, Search, Target, BarChart3, TrendingUp, Globe, 
-  Calendar, ExternalLink, Award, AlertCircle, CheckCircle
+  Search, Plus, BarChart3, Calendar, 
+  ExternalLink, Target, AlertCircle, Award, CheckCircle, Globe
 } from 'lucide-react'
 
 export default function RankingPage() {
@@ -50,8 +48,10 @@ export default function RankingPage() {
       if (result.success) {
         setProjects(result.data)
       }
-    } catch (error) {
-      console.error('加载项目失败:', error)
+    } catch (error: unknown) {
+      console.error('获取排名项目失败:', error)
+      const errorMessage = error instanceof Error ? error.message : '获取排名项目失败'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -107,8 +107,10 @@ export default function RankingPage() {
       setCreateForm({ projectName: '', domain: '', keywords: '', location: 'China' })
       loadProjects()
 
-    } catch (error: any) {
-      setError(error.message || '创建失败，数据服务暂时不可用，请稍后重试')
+    } catch (error: unknown) {
+      console.error('创建项目失败:', error)
+      const errorMessage = error instanceof Error ? error.message : '创建项目失败'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -456,3 +458,5 @@ export default function RankingPage() {
     </div>
   )
 }
+
+

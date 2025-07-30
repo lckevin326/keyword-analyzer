@@ -6,12 +6,12 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select } from '@/components/ui/select'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Loading, PageLoading, CardLoading } from '@/components/ui/loading'
+import { Loading, PageLoading } from '@/components/ui/loading'
 import { supabase } from '@/lib/supabase'
 import { type KeywordDetailAnalysis } from '@/lib/keyword-data'
 import { 
-  Search, BarChart3, TrendingUp, Globe, Target, Calendar, 
-  Eye, ExternalLink, HelpCircle, Zap, Activity
+  Search, TrendingUp, Globe, Target, Calendar, 
+  Eye, ExternalLink, HelpCircle
 } from 'lucide-react'
 import { PermissionBanner } from '@/components/membership/permission-guard'
 
@@ -55,9 +55,9 @@ export default function KeywordAnalysisPage() {
 
       setAnalysis(result.data)
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('关键词分析失败:', error)
-      setError(error.message || '分析失败，数据服务暂时不可用，请稍后重试')
+      setError(error instanceof Error ? error.message : '分析失败，请稍后重试')
     } finally {
       setLoading(false)
     }
@@ -414,3 +414,5 @@ export default function KeywordAnalysisPage() {
     </div>
   )
 }
+
+

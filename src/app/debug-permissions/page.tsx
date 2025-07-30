@@ -6,10 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { supabase } from '@/lib/supabase'
 
 export default function DebugPermissionsPage() {
-  const [result, setResult] = useState<any>(null)
+  const [result, setResult] = useState<Record<string, unknown> | null>(null)
   const [loading, setLoading] = useState(false)
 
-  const testPermissions = async () => {
+  const fetchPermissions = async () => {
     setLoading(true)
     try {
       const { data: { session } } = await supabase.auth.getSession()
@@ -29,8 +29,9 @@ export default function DebugPermissionsPage() {
 
       const data = await response.json()
       setResult(data)
-    } catch (error: any) {
-      setResult({ error: error.message })
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : '获取权限失败'
+      setResult({ error: errorMessage })
     } finally {
       setLoading(false)
     }
@@ -64,8 +65,9 @@ export default function DebugPermissionsPage() {
 
       const data = await response.json()
       setResult({ apiTest: data, responseStatus: response.status })
-    } catch (error: any) {
-      setResult({ error: error.message })
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'API测试失败'
+      setResult({ error: errorMessage })
     } finally {
       setLoading(false)
     }
@@ -98,8 +100,9 @@ export default function DebugPermissionsPage() {
 
       const data = await response.json()
       setResult({ directApiTest: data, responseStatus: response.status })
-    } catch (error: any) {
-      setResult({ error: error.message })
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Direct API测试失败'
+      setResult({ error: errorMessage })
     } finally {
       setLoading(false)
     }
@@ -128,14 +131,15 @@ export default function DebugPermissionsPage() {
 
       const data = await response.json()
       setResult({ titlesDirectApiTest: data, responseStatus: response.status })
-    } catch (error: any) {
-      setResult({ error: error.message })
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Titles API测试失败'
+      setResult({ error: errorMessage })
     } finally {
       setLoading(false)
     }
   }
 
-  const testCreditsDeduction = async () => {
+  const testCreditsDebugAPI = async () => {
     setLoading(true)
     try {
       const { data: { session } } = await supabase.auth.getSession()
@@ -154,8 +158,36 @@ export default function DebugPermissionsPage() {
 
       const data = await response.json()
       setResult({ creditsDebugTest: data, responseStatus: response.status })
-    } catch (error: any) {
-      setResult({ error: error.message })
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Credits API测试失败'
+      setResult({ error: errorMessage })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const testPermissionsDebugAPI = async () => {
+    setLoading(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        setResult({ error: '请先登录' })
+        return
+      }
+
+      const response = await fetch('/api/debug/permissions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'same-origin'
+      })
+
+      const data = await response.json()
+      setResult({ permissionsDebugTest: data, responseStatus: response.status })
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Permissions API测试失败'
+      setResult({ error: errorMessage })
     } finally {
       setLoading(false)
     }
@@ -169,7 +201,7 @@ export default function DebugPermissionsPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-x-2 flex flex-wrap gap-2">
-            <Button onClick={testPermissions} disabled={loading}>
+            <Button onClick={fetchPermissions} disabled={loading}>
               运行权限调试
             </Button>
             <Button onClick={testContentOutlineAPI} disabled={loading}>
@@ -181,8 +213,11 @@ export default function DebugPermissionsPage() {
             <Button onClick={testTitlesDirectAPI} disabled={loading} variant="outline">
               测试标题直接API
             </Button>
-            <Button onClick={testCreditsDeduction} disabled={loading} variant="secondary">
+            <Button onClick={testCreditsDebugAPI} disabled={loading} variant="secondary">
               调试积分扣除
+            </Button>
+            <Button onClick={testPermissionsDebugAPI} disabled={loading} variant="secondary">
+              调试权限API
             </Button>
           </div>
           

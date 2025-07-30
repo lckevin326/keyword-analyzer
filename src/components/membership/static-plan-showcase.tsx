@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { CheckCircle, Star } from 'lucide-react'
+import { Card } from '@/components/ui/card'
+import { Star, CheckCircle } from 'lucide-react'
 
 export default function StaticPlanShowcase() {
   const plans = [
@@ -139,3 +139,5 @@ export default function StaticPlanShowcase() {
     </div>
   )
 }
+
+

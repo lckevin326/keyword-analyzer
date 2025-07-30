@@ -8,7 +8,6 @@ export class FixedMembershipService {
   async getUserSubscription(userId: string): Promise<UserSubscription | null> {
     console.log(`[MEMBERSHIP] 查询用户 ${userId} 的订阅信息`)
     
-    // 首先查询所有用户的订阅记录（不限制status）
     const { data: allSubscriptions, error: allError } = await this.supabase
       .from('user_subscriptions')
       .select(`

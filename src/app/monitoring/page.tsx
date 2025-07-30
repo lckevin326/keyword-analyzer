@@ -1,17 +1,13 @@
-'use client'
-
-import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select } from '@/components/ui/select'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Loading, PageLoading, CardLoading } from '@/components/ui/loading'
+import { Loading, PageLoading } from '@/components/ui/loading'
 import { supabase } from '@/lib/supabase'
-import { type MarketMonitoringResponse } from '@/lib/keyword-data'
 import { 
-  AlertTriangle, TrendingUp, Target, Search, RefreshCw, 
-  Calendar, ArrowDown, ArrowUp, Zap, Users, BarChart3
+  Search, BarChart3, 
+  ArrowDown, ArrowUp, Users, TrendingUp, RefreshCw,
+  AlertTriangle, Calendar
 } from 'lucide-react'
 
 export default function MonitoringPage() {
@@ -81,9 +77,10 @@ export default function MonitoringPage() {
 
       setMonitoring(result.data)
 
-    } catch (error: any) {
-      console.error('市场动态监控失败:', error)
-      setError(error.message || '监控失败，数据服务暂时不可用，请稍后重试')
+    } catch (error: unknown) {
+      console.error('获取监控数据失败:', error)
+      const errorMessage = error instanceof Error ? error.message : '获取监控数据失败'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -182,6 +179,20 @@ export default function MonitoringPage() {
         </CardContent>
       </Card>
     )
+  }
+
+  const handleRefresh = useCallback(async (alert: Record<string, unknown>) => {
+    // 在这里实现刷新单个警报的逻辑
+    // 例如，调用后端API来刷新特定的警报
+    // 这里只是一个占位符实现
+    console.log('刷新警报:', alert);
+  }, [])
+
+  const handleAlert = async (alert: Record<string, unknown>) => {
+    // 在这里实现处理警报的逻辑
+    // 例如，调用后端API来处理特定的警报
+    // 这里只是一个占位符实现
+    console.log('处理警报:', alert);
   }
 
   return (
@@ -440,3 +451,6 @@ export default function MonitoringPage() {
     </div>
   )
 }
+
+
+

@@ -36,8 +36,9 @@ export default function LoginPage() {
       if (error) throw error
 
       router.push(redirectTo)
-    } catch (error: any) {
-      setError(error.message || '登录失败，请重试')
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : '登录失败，请重试'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -59,8 +60,10 @@ export default function LoginPage() {
       })
 
       if (error) throw error
-    } catch (error: any) {
-      setError(error.message || 'Google登录失败，请重试')
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : '登录失败，请重试'
+      setError(errorMessage)
+    } finally {
       setLoading(false)
     }
   }

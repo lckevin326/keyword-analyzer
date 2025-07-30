@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { MembershipService } from '@/lib/membership'
@@ -8,14 +8,18 @@ let cachedPlansData: any = null
 let cacheTimestamp = 0
 const CACHE_DURATION = 30 * 60 * 1000 // 30分钟缓存
 
-const MEMBERSHIP_PLANS = [
-  {
+const plans: Record<string, {
+  id: string
+  name: string
+  price: number
+  features: string[]
+  credits: number
+  popular?: boolean
+}> = {
+  free: {
     id: 'free',
     name: '免费版',
     price: 0,
-    period: 'month',
-    description: '适合个人用户入门体验',
-    credits: 100,
     features: [
       '每月100积分',
       '基础关键词搜索',
@@ -23,21 +27,13 @@ const MEMBERSHIP_PLANS = [
       '基本报告导出',
       '邮件支持'
     ],
-    limitations: [
-      '每日查询限制：10次',
-      '历史数据保留：7天',
-      '导出格式：CSV'
-    ],
-    isPopular: false,
-    isRecommended: false
+    credits: 100,
+    popular: false
   },
-  {
+  basic: {
     id: 'basic',
     name: '基础版',
     price: 99,
-    period: 'month',
-    description: '适合小型企业和个人专业用户',
-    credits: 500,
     features: [
       '每月500积分',
       '完整关键词分析',
@@ -47,21 +43,13 @@ const MEMBERSHIP_PLANS = [
       '优先邮件支持',
       'API访问（限制）'
     ],
-    limitations: [
-      '每日查询限制：50次',
-      '历史数据保留：30天',
-      '同时监控项目：3个'
-    ],
-    isPopular: true,
-    isRecommended: false
+    credits: 500,
+    popular: true
   },
-  {
+  professional: {
     id: 'professional',
     name: '专业版',
     price: 299,
-    period: 'month',
-    description: '适合中型企业和营销团队',
-    credits: 2000,
     features: [
       '每月2000积分',
       '高级关键词挖掘',
@@ -72,22 +60,13 @@ const MEMBERSHIP_PLANS = [
       '完整API访问',
       '在线客服支持'
     ],
-    limitations: [
-      '每日查询限制：200次',
-      '历史数据保留：90天',
-      '同时监控项目：10个',
-      '团队成员：5人'
-    ],
-    isPopular: false,
-    isRecommended: true
+    credits: 2000,
+    popular: false
   },
-  {
+  enterprise: {
     id: 'enterprise',
     name: '企业版',
     price: 599,
-    period: 'month',
-    description: '适合大型企业和代理机构',
-    credits: 5000,
     features: [
       '每月5000积分',
       '企业级数据分析',
@@ -99,18 +78,12 @@ const MEMBERSHIP_PLANS = [
       '数据安全保障',
       '定制化培训'
     ],
-    limitations: [
-      '无查询限制',
-      '历史数据永久保留',
-      '无限监控项目',
-      '无限团队成员'
-    ],
-    isPopular: false,
-    isRecommended: false
+    credits: 5000,
+    popular: false
   }
-]
+}
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // 检查缓存
     if (cachedPlansData && Date.now() - cacheTimestamp < CACHE_DURATION) {
@@ -157,7 +130,7 @@ export async function GET(request: NextRequest) {
     }
 
     const responseData = {
-      plans: MEMBERSHIP_PLANS,
+      plans: Object.values(plans),
       userSubscription: userSubscription || {
         plan_name: '免费版',
         status: 'active',
@@ -181,21 +154,14 @@ export async function GET(request: NextRequest) {
       success: true,
       data: responseData
     })
-  } catch (error: any) {
-    console.error('获取方案数据失败:', error)
-    
-    // 如果有缓存的方案数据，在出错时也返回
-    if (cachedPlansData) {
-      return NextResponse.json({
-        success: true,
-        data: cachedPlansData,
-        fromCache: true
-      })
-    }
-
-    return NextResponse.json(
-      { error: error.message || '服务器错误' },
-      { status: 500 }
-    )
+  } catch (error: unknown) {
+    console.error('获取会员方案数据失败:', error)
+    const errorMessage = error instanceof Error ? error.message : '获取会员方案数据失败'
+    return NextResponse.json({
+      error: errorMessage
+    }, { status: 500 })
   }
 }
+
+
+

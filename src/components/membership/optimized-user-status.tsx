@@ -31,6 +31,11 @@ let cachedUserStatus: UserStatus | null = null
 let cacheTimestamp: number = 0
 const CACHE_DURATION = 5 * 60 * 1000 // 5分钟缓存
 
+const handleError = (error: unknown) => {
+  const errorMessage = error instanceof Error ? error.message : '操作失败'
+  console.error('User status error:', errorMessage)
+}
+
 export default function OptimizedUserStatus() {
   const [userStatus, setUserStatus] = useState<UserStatus | null>(cachedUserStatus)
   const [loading, setLoading] = useState(!cachedUserStatus)
@@ -69,7 +74,7 @@ export default function OptimizedUserStatus() {
       cacheTimestamp = Date.now()
       setUserStatus(result.data)
     } catch (err) {
-      console.error('获取用户状态失败:', err)
+      handleError(err)
       setError(err instanceof Error ? err.message : '加载失败')
     } finally {
       setLoading(false)

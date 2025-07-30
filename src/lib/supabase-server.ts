@@ -70,3 +70,21 @@ export const createServerSupabaseClientForAPI = (request?: NextRequest) => {
 
   return supabase
 }
+
+export async function getUser(): Promise<User | null> {
+  const supabase = createServerSupabaseClient()
+  
+  try {
+    const { data: { user }, error } = await supabase.auth.getUser()
+    
+    if (error) {
+      console.error('获取用户信息失败:', error)
+      return null
+    }
+    
+    return user
+  } catch (error: unknown) {
+    console.error('获取用户信息异常:', error)
+    return null
+  }
+}

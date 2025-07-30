@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { withAuthOnly } from '@/lib/permission-middleware'
 
 export async function GET(request: NextRequest) {
@@ -81,3 +82,4 @@ export async function GET(request: NextRequest) {
     }
   )
 }
+

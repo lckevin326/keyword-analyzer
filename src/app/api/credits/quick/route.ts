@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const cookieStore = await cookies()
     const supabase = createServerClient(
@@ -54,11 +54,13 @@ export async function GET(request: NextRequest) {
         current_credits: subscription.current_credits || 0
       }
     })
-  } catch (error: any) {
-    console.error('快速获取积分失败:', error)
-    return NextResponse.json(
-      { error: error.message || '服务器错误' },
-      { status: 500 }
-    )
+  } catch (error: unknown) {
+    console.error('快速充值失败:', error)
+    const errorMessage = error instanceof Error ? error.message : '充值失败'
+    return NextResponse.json({
+      error: errorMessage
+    }, { status: 500 })
   }
 }
+
+

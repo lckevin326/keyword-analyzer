@@ -37,10 +37,11 @@ export async function POST(request: NextRequest) {
       data: permission
     })
 
-  } catch (error: any) {
-    console.error('检查权限失败:', error)
-    return NextResponse.json({
-      error: error.message || '检查权限失败'
+  } catch (error: unknown) {
+    console.error('权限检查失败:', error)
+    const errorMessage = error instanceof Error ? error.message : '权限检查失败'
+    return NextResponse.json({ 
+      error: errorMessage 
     }, { status: 500 })
   }
 }

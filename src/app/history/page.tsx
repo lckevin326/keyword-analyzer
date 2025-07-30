@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -19,21 +19,36 @@ interface SearchHistory {
 }
 
 export default function HistoryPage() {
-  const [searches, setSearches] = useState<SearchHistory[]>([])
+  const [searches, setSearches] = useState<Array<Record<string, unknown>>>([])
   const [filteredSearches, setFilteredSearches] = useState<SearchHistory[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [typeFilter, setTypeFilter] = useState<'all' | 'competitor' | 'trending'>('all')
 
-  useEffect(() => {
-    loadSearchHistory()
-  }, [])
+  const filterSearches = useCallback((searchTerm: string) => {
+    let filtered = searches
+
+    // 按类型筛选
+    if (typeFilter !== 'all') {
+      filtered = filtered.filter(search => search.search_type === typeFilter)
+    }
+
+    // 按关键词搜索
+    if (searchTerm.trim()) {
+      filtered = filtered.filter(search => 
+        search.query.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    }
+
+    setFilteredSearches(filtered)
+  }, [searches, typeFilter])
 
   useEffect(() => {
-    filterSearches()
-  }, [searches, searchQuery, typeFilter])
+    loadHistory()
+    filterSearches('')
+  }, [filterSearches])
 
-  const loadSearchHistory = async () => {
+  const loadHistory = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
@@ -54,35 +69,17 @@ export default function HistoryPage() {
     }
   }
 
-  const filterSearches = () => {
-    let filtered = searches
-
-    // 按类型筛选
-    if (typeFilter !== 'all') {
-      filtered = filtered.filter(search => search.search_type === typeFilter)
-    }
-
-    // 按关键词搜索
-    if (searchQuery.trim()) {
-      filtered = filtered.filter(search => 
-        search.query.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    }
-
-    setFilteredSearches(filtered)
-  }
-
-  const deleteSearch = async (searchId: string) => {
+  const deleteSearch = async (search: Record<string, unknown>) => {
     if (!confirm('确定要删除这条搜索记录吗？')) return
 
     try {
       const { error } = await supabase
         .from('keyword_searches')
         .delete()
-        .eq('id', searchId)
+        .eq('id', search.id)
 
       if (!error) {
-        setSearches(searches.filter(search => search.id !== searchId))
+        setSearches(searches.filter(s => s.id !== search.id))
       }
     } catch (error) {
       console.error('删除搜索记录失败:', error)

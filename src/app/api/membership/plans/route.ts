@@ -1,13 +1,16 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { MembershipService } from '@/lib/membership'
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    // 验证用户身份（可选，计划信息可以公开）
     const supabase = createServerSupabaseClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) {
+      return NextResponse.json({ error: '未授权访问' }, { status: 401 })
+    }
+    
     const membershipService = new MembershipService()
     const plans = await membershipService.getMembershipPlans()
 
@@ -16,10 +19,12 @@ export async function GET(request: NextRequest) {
       data: plans
     })
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('获取会员方案失败:', error)
+    const errorMessage = error instanceof Error ? error.message : '获取会员方案失败'
     return NextResponse.json({
-      error: error.message || '获取会员方案失败'
+      error: errorMessage
     }, { status: 500 })
   }
 }
+

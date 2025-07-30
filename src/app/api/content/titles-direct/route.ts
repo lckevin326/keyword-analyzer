@@ -82,11 +82,11 @@ export async function POST(request: NextRequest) {
       message: `成功为关键词 "${targetKeyword}" 生成 ${titles.titles.length} 个标题创意，消耗 5 积分`
     })
 
-  } catch (error: any) {
-    console.error('Direct Titles API - 标题生成失败:', error)
-    
+  } catch (error: unknown) {
+    console.error('标题生成失败:', error)
+    const errorMessage = error instanceof Error ? error.message : '生成失败，请重试'
     return NextResponse.json({ 
-      error: error.message || '生成失败，请重试' 
+      error: errorMessage 
     }, { status: 500 })
   }
 }

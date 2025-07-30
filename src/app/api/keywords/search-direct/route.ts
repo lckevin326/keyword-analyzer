@@ -108,11 +108,11 @@ export async function POST(request: NextRequest) {
       message: `成功获取 ${keywords.length} 个相关关键词，消耗 ${requiredCredits} 积分`
     })
 
-  } catch (error: any) {
-    console.error('Direct Keyword Search API - 基础关键词搜索失败:', error)
-    
+  } catch (error: unknown) {
+    console.error('关键词搜索失败:', error)
+    const errorMessage = error instanceof Error ? error.message : '搜索失败，请重试'
     return NextResponse.json({ 
-      error: error.message || '搜索失败，请重试' 
+      error: errorMessage 
     }, { status: 500 })
   }
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Coins, Loader2, Plus } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { creditRefreshManager } from '@/lib/credit-refresh'
@@ -16,25 +16,7 @@ export default function CreditDisplay({ className = '' }: CreditDisplayProps) {
   const [error, setError] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
 
-  useEffect(() => {
-    setMounted(true)
-    fetchCredits()
-    
-    // 注册全局刷新监听器
-    const unsubscribe = creditRefreshManager.subscribe(() => {
-      fetchCredits()
-    })
-    
-    // 设置定期更新（每30秒）
-    const interval = setInterval(fetchCredits, 30000)
-    
-    return () => {
-      clearInterval(interval)
-      unsubscribe()
-    }
-  }, [])
-
-  const fetchCredits = async () => {
+  const fetchCredits = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       
@@ -76,7 +58,25 @@ export default function CreditDisplay({ className = '' }: CreditDisplayProps) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    setMounted(true)
+    fetchCredits()
+    
+    // 注册全局刷新监听器
+    const unsubscribe = creditRefreshManager.subscribe(() => {
+      fetchCredits()
+    })
+    
+    // 设置定期更新（每30秒）
+    const interval = setInterval(fetchCredits, 30000)
+    
+    return () => {
+      clearInterval(interval)
+      unsubscribe()
+    }
+  }, [fetchCredits])
 
   // 防止hydration不匹配，客户端mount前显示占位符
   if (!mounted) {

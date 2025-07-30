@@ -55,11 +55,11 @@ export async function GET(request: NextRequest) {
       message: `成功获取 ${trendingKeywords.length} 个热门关键词`
     })
 
-  } catch (error: any) {
-    console.error('获取热门关键词失败:', error)
-    
+  } catch (error: unknown) {
+    console.error('获取趋势关键词失败:', error)
+    const errorMessage = error instanceof Error ? error.message : '获取失败，请重试'
     return NextResponse.json({ 
-      error: error.message || '获取失败，请重试' 
+      error: errorMessage 
     }, { status: 500 })
   }
 }

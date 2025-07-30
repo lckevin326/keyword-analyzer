@@ -61,8 +61,9 @@ export default function PlanComparison() {
       
       setPlans(plansData.data || [])
       setCurrentSubscription(subscriptionData.data)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '加载失败')
+    } catch {
+      console.error('获取会员方案失败')
+      setError('获取会员方案失败，请稍后重试')
     } finally {
       setLoading(false)
     }
@@ -239,3 +240,4 @@ export default function PlanComparison() {
     </div>
   )
 }
+

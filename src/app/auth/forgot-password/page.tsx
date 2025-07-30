@@ -29,8 +29,9 @@ export default function ForgotPasswordPage() {
       if (error) throw error
 
       setSuccess(true)
-    } catch (error: any) {
-      setError(error.message || '发送重置密码邮件失败，请重试')
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : '发送失败，请重试'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }

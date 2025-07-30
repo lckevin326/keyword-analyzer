@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 
 // 获取用户的排名项目列表
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // 验证用户身份
     const supabase = createServerSupabaseClient()
@@ -31,10 +31,11 @@ export async function GET(request: NextRequest) {
       message: `获取到 ${projects?.length || 0} 个排名项目`
     })
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('获取排名项目失败:', error)
-    return NextResponse.json({ 
-      error: error.message || '获取失败，请重试' 
+    const errorMessage = error instanceof Error ? error.message : '获取排名项目失败'
+    return NextResponse.json({
+      error: errorMessage
     }, { status: 500 })
   }
 }
@@ -97,10 +98,13 @@ export async function POST(request: NextRequest) {
       message: `成功创建排名项目 "${projectName}"，包含 ${keywords.length} 个关键词`
     })
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('创建排名项目失败:', error)
-    return NextResponse.json({ 
-      error: error.message || '创建失败，请重试' 
+    const errorMessage = error instanceof Error ? error.message : '创建排名项目失败'
+    return NextResponse.json({
+      error: errorMessage
     }, { status: 500 })
   }
 }
+
+

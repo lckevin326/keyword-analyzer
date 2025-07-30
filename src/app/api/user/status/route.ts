@@ -3,7 +3,7 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { MembershipService } from '@/lib/membership'
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const cookieStore = await cookies()
     const supabase = createServerClient(
@@ -72,11 +72,12 @@ export async function GET(request: NextRequest) {
         permissions: permissions || {}
       }
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('获取用户状态失败:', error)
-    return NextResponse.json(
-      { error: error.message || '服务器错误' },
-      { status: 500 }
-    )
+    const errorMessage = error instanceof Error ? error.message : '获取用户状态失败'
+    return NextResponse.json({
+      error: errorMessage
+    }, { status: 500 })
   }
 }
+

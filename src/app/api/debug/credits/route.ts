@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { MembershipService } from '@/lib/membership'
 
-export async function POST(request: NextRequest) {
+export async function GET() {
   try {
     // 验证用户身份
     const supabase = createServerSupabaseClient()
@@ -84,11 +84,15 @@ export async function POST(request: NextRequest) {
       }
     })
     
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('积分调试失败:', error)
+    const errorMessage = error instanceof Error ? error.message : '调试失败'
+    const errorStack = error instanceof Error ? error.stack : undefined
     return NextResponse.json({
-      error: error.message,
-      stack: error.stack
+      error: errorMessage,
+      stack: errorStack
     }, { status: 500 })
   }
 }
+
+

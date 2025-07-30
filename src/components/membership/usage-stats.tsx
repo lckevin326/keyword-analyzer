@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Loading } from '@/components/ui/loading'
@@ -29,11 +29,7 @@ export default function UsageStats() {
   const [error, setError] = useState<string | null>(null)
   const [period, setPeriod] = useState<'7' | '30'>('7')
 
-  useEffect(() => {
-    fetchUsageStats()
-  }, [period])
-
-  const fetchUsageStats = async () => {
+  const fetchUsageStats = useCallback(async () => {
     try {
       setLoading(true)
       
@@ -48,7 +44,11 @@ export default function UsageStats() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [period])
+
+  useEffect(() => {
+    fetchUsageStats()
+  }, [fetchUsageStats])
 
   if (loading) {
     return (
@@ -206,3 +206,5 @@ export default function UsageStats() {
     </div>
   )
 }
+
+

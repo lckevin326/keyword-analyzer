@@ -143,10 +143,11 @@ export async function POST(request: NextRequest) {
         subscription: result.data[0]
       }
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('恢复订阅API错误:', error)
+    const errorMessage = error instanceof Error ? error.message : '服务器错误'
     return NextResponse.json(
-      { error: error.message || '服务器错误' },
+      { error: errorMessage },
       { status: 500 }
     )
   }

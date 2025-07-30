@@ -43,10 +43,11 @@ export async function POST(request: NextRequest) {
       message: '密码重置邮件已发送',
       success: true
     })
-  } catch (error: any) {
-    console.error('密码重置错误:', error)
+  } catch (error: unknown) {
+    console.error('发送重置密码邮件失败:', error)
+    const errorMessage = error instanceof Error ? error.message : '服务器错误'
     return NextResponse.json(
-      { error: error.message || '发送重置密码邮件失败' },
+      { error: errorMessage },
       { status: 500 }
     )
   }

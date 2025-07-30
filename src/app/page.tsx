@@ -1,12 +1,12 @@
-import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import PlanComparison from '@/components/membership/plan-comparison'
+import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import Link from 'next/link'
 import { 
-  TrendingUp, Search, Target, BarChart3, Users, Zap, 
-  Crown, Star, CheckCircle, ArrowRight, Globe, Brain,
-  PenTool, Lightbulb, TrendingDown, Award, Shield
+  BarChart3, Target, Users, TrendingUp, TrendingDown,
+  Zap, Shield, Star, CheckCircle, Brain, Globe,
+  Award, ArrowRight
 } from 'lucide-react'
+import PlanComparison from '@/components/membership/plan-comparison'
 
 export default function HomePage() {
   return (
@@ -402,3 +402,4 @@ export default function HomePage() {
     </div>
   )
 }
+

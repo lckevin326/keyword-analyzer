@@ -50,11 +50,11 @@ export async function POST(request: NextRequest) {
       message: `检测到 ${monitoring.total_alerts} 个市场动态变化`
     })
 
-  } catch (error: any) {
-    console.error('市场动态监控失败:', error)
-    
-    return NextResponse.json({ 
-      error: error.message || '监控失败，请重试' 
+  } catch (error: unknown) {
+    console.error('获取监控警报失败:', error)
+    const errorMessage = error instanceof Error ? error.message : '获取监控警报失败'
+    return NextResponse.json({
+      error: errorMessage
     }, { status: 500 })
   }
 }

@@ -1,17 +1,15 @@
-'use client'
-
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select } from '@/components/ui/select'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Loading, PageLoading, CardLoading } from '@/components/ui/loading'
+import { Loading, PageLoading } from '@/components/ui/loading'
 import { supabase } from '@/lib/supabase'
-import { type CompetitorGapAnalysis } from '@/lib/keyword-data'
+import { type GapAnalysisResult } from '@/lib/keyword-data'
 import { 
-  Target, Users, TrendingUp, Globe, BarChart3, Plus, Minus, 
-  ArrowRight, ExternalLink, Trophy, Lightbulb
+  Target, BarChart3, 
+  Users, Trophy, Lightbulb
 } from 'lucide-react'
 import { PermissionBanner } from '@/components/membership/permission-guard'
 
@@ -21,16 +19,12 @@ export default function GapAnalysisPage() {
   const [competitorDomains, setCompetitorDomains] = useState(['', '', ''])
   const [location, setLocation] = useState('China')
   const [loading, setLoading] = useState(false)
-  const [analysis, setAnalysis] = useState<CompetitorGapAnalysis | null>(null)
+  const [analysis, setAnalysis] = useState<GapAnalysisResult | null>(null)
   const [error, setError] = useState('')
   const [activeTab, setActiveTab] = useState<'shared' | 'advantage' | 'opportunity'>('opportunity')
 
-  const handleAnalysis = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!projectName.trim() || !ownDomain.trim()) return
-
-    const validCompetitors = competitorDomains.filter(domain => domain.trim())
-    if (validCompetitors.length === 0) {
+  const analyzeGap = async (formData: Record<string, unknown>) => {
+    if (!formData.ownDomain.trim() || !formData.competitorDomains.length) {
       setError('请至少输入一个竞争对手域名')
       return
     }
@@ -54,10 +48,10 @@ export default function GapAnalysisPage() {
           'Authorization': `Bearer ${session.access_token}`
         },
         body: JSON.stringify({ 
-          projectName,
-          ownDomain, 
-          competitorDomains: validCompetitors, 
-          location 
+          projectName: formData.projectName,
+          ownDomain: formData.ownDomain, 
+          competitorDomains: formData.competitorDomains, 
+          location: formData.location 
         })
       })
 
@@ -69,9 +63,10 @@ export default function GapAnalysisPage() {
 
       setAnalysis(result.data)
 
-    } catch (error: any) {
-      console.error('差距分析失败:', error)
-      setError(error.message || '分析失败，数据服务暂时不可用，请稍后重试')
+    } catch (error: unknown) {
+      console.error('分析失败:', error)
+      const errorMessage = error instanceof Error ? error.message : '分析失败，请重试'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -446,3 +441,7 @@ export default function GapAnalysisPage() {
     </div>
   )
 }
+
+
+
+

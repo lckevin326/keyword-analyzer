@@ -1,13 +1,17 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { MembershipService, type FeaturePermission } from '@/lib/membership'
 
 // 获取功能列表和用户权限
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const supabase = createServerSupabaseClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) {
+      return NextResponse.json({ error: '未授权访问' }, { status: 401 })
+    }
+    
     const membershipService = new MembershipService()
     
     // 获取所有功能列表
@@ -40,10 +44,12 @@ export async function GET(request: NextRequest) {
       }
     })
 
-  } catch (error: any) {
-    console.error('获取功能信息失败:', error)
+  } catch (error: unknown) {
+    console.error('获取功能列表失败:', error)
+    const errorMessage = error instanceof Error ? error.message : '获取功能列表失败'
     return NextResponse.json({
-      error: error.message || '获取功能信息失败'
+      error: errorMessage
     }, { status: 500 })
   }
 }
+

@@ -998,6 +998,14 @@ class DataForSEOService {
     
     return alerts
   }
+
+  private handleApiError(error: unknown): void {
+    if (error instanceof Error) {
+      console.error('API调用失败:', error.message)
+    } else {
+      console.error('未知错误:', error)
+    }
+  }
 }
 
 export default DataForSEOService

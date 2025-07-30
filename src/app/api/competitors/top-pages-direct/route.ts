@@ -107,11 +107,10 @@ export async function POST(request: NextRequest) {
       message: `成功分析域名 "${domain}" 的高流量页面，共 ${analysis.pages.length} 个页面，消耗 12 积分`
     })
 
-  } catch (error: any) {
-    console.error('Direct Top Pages API - 高流量页面分析失败:', error)
-    
+  } catch (error: unknown) {
+    console.error('Direct Top Pages API - Error:', error)
     return NextResponse.json({ 
-      error: error.message || '分析失败，请重试' 
+      error: error instanceof Error ? error.message : '服务器内部错误' 
     }, { status: 500 })
   }
 }

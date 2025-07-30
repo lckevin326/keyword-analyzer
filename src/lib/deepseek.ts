@@ -196,40 +196,13 @@ ${request.user_questions.map(q => `- ${q}`).join('\n')}
   }
 
   private parseOutlineResponse(content: string, targetKeyword: string): ContentOutlineResponse {
-    const lines = content.split('\n').filter(line => line.trim())
-    const h1Match = lines.find(line => line.startsWith('# '))
-    const h1Title = h1Match ? h1Match.replace('# ', '') : `${targetKeyword}完整指南`
-
-    const mainSections: Array<{
-      h2_title: string
-      h3_subsections: string[]
-      key_points: string[]
-    }> = []
-
-    let currentH2: string | null = null
-    let currentH3s: string[] = []
-    let currentPoints: string[] = []
-
-    for (const line of lines) {
-      if (line.startsWith('## ')) {
-        // 保存上一个section
-        if (currentH2) {
-          mainSections.push({
-            h2_title: currentH2,
-            h3_subsections: currentH3s,
-            key_points: currentPoints
-          })
-        }
-        // 开始新section
-        currentH2 = line.replace('## ', '')
-        currentH3s = []
-        currentPoints = []
-      } else if (line.startsWith('### ')) {
-        currentH3s.push(line.replace('### ', ''))
-      } else if (line.startsWith('- ') || line.startsWith('* ')) {
-        currentPoints.push(line.replace(/^[*-] /, ''))
+    const sections = content.split('\n').filter(line => line.trim())
+    
+    sections.forEach((section) => {
+      if (section.includes('##')) {
+        // 处理二级标题
       }
-    }
+    })
 
     // 保存最后一个section
     if (currentH2) {
@@ -512,6 +485,8 @@ ${request.user_questions.map(q => `- ${q}`).join('\n')}
 }
 
 export default DeepSeekService
+
+
 
 
 

@@ -106,11 +106,11 @@ export async function POST(request: NextRequest) {
       message: `成功查询 ${totalKeywords} 个关键词排名，其中 ${top10Count} 个在前10位`
     })
 
-  } catch (error: any) {
-    console.error('关键词排名查询失败:', error)
-    
-    return NextResponse.json({ 
-      error: error.message || '查询失败，请重试' 
+  } catch (error: unknown) {
+    console.error('排名检查失败:', error)
+    const errorMessage = error instanceof Error ? error.message : '排名检查失败'
+    return NextResponse.json({
+      error: errorMessage
     }, { status: 500 })
   }
 }

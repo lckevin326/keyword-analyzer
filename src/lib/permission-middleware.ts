@@ -97,66 +97,79 @@ function getPermissionErrorMessage(reason: string): string {
   return messages[reason] || '权限不足'
 }
 
-// 使用积分的权限验证（用于实际调用功能时）
-export async function withFeatureUsage(
-  request: NextRequest,
-  config: PermissionConfig,
-  handler: (user: any, permission: any, membershipService: MembershipService, requestData: any) => Promise<any>
-): Promise<NextResponse> {
-  try {
-    // 1. 权限验证
-    const permissionResult = await withPermissionCheck(request, config)
-    
-    if (!permissionResult.success) {
-      console.log('Permission check failed:', permissionResult.error)
-      return NextResponse.json({
-        error: permissionResult.error
-      }, { status: permissionResult.error === '未授权访问' ? 401 : 403 })
-    }
+type HandlerFunction = (
+  user: User,
+  permission: FeaturePermission | null,
+  membershipService: MembershipService,
+  requestData: Record<string, unknown>
+) => Promise<NextResponse>
 
-    const { user, permission } = permissionResult
-    const membershipService = new MembershipService()
+type MiddlewareConfig = {
+  featureCode: string
+  requireAuth?: boolean
+  requirePermission?: boolean
+}
 
-    // 2. 读取请求数据（只读取一次）
-    let requestData = {}
+export function withFeatureUsage(
+  config: MiddlewareConfig,
+  handler: HandlerFunction
+) {
+  return async (request: NextRequest): Promise<NextResponse> => {
     try {
-      requestData = await request.json()
-    } catch (error) {
-      // 如果请求体为空或格式错误，使用空对象
-    }
-
-    // 3. 如果需要消耗积分，先扣除积分
-    let usageResult
-    if (permission && permission.credits_required > 0) {
-      usageResult = await membershipService.useFeature(
-        user.id,
-        config.featureCode,
-        requestData
-      )
-
-      if (!usageResult.success) {
+      // 1. 权限验证
+      const permissionResult = await withPermissionCheck(request, config)
+      
+      if (!permissionResult.success) {
+        console.log('Permission check failed:', permissionResult.error)
         return NextResponse.json({
-          error: getPermissionErrorMessage(usageResult.error || 'usage_failed')
-        }, { status: 403 })
+          error: permissionResult.error
+        }, { status: permissionResult.error === '未授权访问' ? 401 : 403 })
       }
+
+      const { user, permission } = permissionResult
+      const membershipService = new MembershipService()
+
+      // 2. 读取请求数据（只读取一次）
+      let requestData = {}
+      try {
+        requestData = await request.json()
+      } catch (error) {
+        // 如果请求体为空或格式错误，使用空对象
+      }
+
+      // 3. 如果需要消耗积分，先扣除积分
+      let usageResult
+      if (permission && permission.credits_required > 0) {
+        usageResult = await membershipService.useFeature(
+          user.id,
+          config.featureCode,
+          requestData
+        )
+
+        if (!usageResult.success) {
+          return NextResponse.json({
+            error: getPermissionErrorMessage(usageResult.error || 'usage_failed')
+          }, { status: 403 })
+        }
+      }
+
+      // 4. 执行实际业务逻辑（传递已解析的请求数据）
+      const result = await handler(user, permission, membershipService, requestData)
+
+      // 4. 如果有使用记录，更新响应数据摘要
+      if (usageResult?.usageId && result) {
+        // 这里可以更新使用记录的响应数据摘要
+        // 暂时跳过，避免额外的数据库调用
+      }
+
+      return NextResponse.json(result)
+
+    } catch (error: any) {
+      console.error('功能执行失败:', error)
+      return NextResponse.json({
+        error: error.message || '系统错误'
+      }, { status: 500 })
     }
-
-    // 4. 执行实际业务逻辑（传递已解析的请求数据）
-    const result = await handler(user, permission, membershipService, requestData)
-
-    // 4. 如果有使用记录，更新响应数据摘要
-    if (usageResult?.usageId && result) {
-      // 这里可以更新使用记录的响应数据摘要
-      // 暂时跳过，避免额外的数据库调用
-    }
-
-    return NextResponse.json(result)
-
-  } catch (error: any) {
-    console.error('功能执行失败:', error)
-    return NextResponse.json({
-      error: error.message || '系统错误'
-    }, { status: 500 })
   }
 }
 

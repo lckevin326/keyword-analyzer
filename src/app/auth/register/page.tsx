@@ -65,8 +65,9 @@ export default function RegisterPage() {
       if (error) throw error
 
       setSuccess(true)
-    } catch (error: any) {
-      setError(error.message || '注册失败，请重试')
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : '注册失败，请重试'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -88,8 +89,9 @@ export default function RegisterPage() {
       })
 
       if (error) throw error
-    } catch (error: any) {
-      setError(error.message || 'Google注册失败，请重试')
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Google注册失败，请重试'
+      setError(errorMessage)
       setLoading(false)
     }
   }

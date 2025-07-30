@@ -61,10 +61,11 @@ export async function POST(request: NextRequest) {
       message: '密码更新成功',
       success: true
     })
-  } catch (error: any) {
-    console.error('密码重置错误:', error)
+  } catch (error: unknown) {
+    console.error('重置密码失败:', error)
+    const errorMessage = error instanceof Error ? error.message : '服务器错误'
     return NextResponse.json(
-      { error: error.message || '密码重置失败' },
+      { error: errorMessage },
       { status: 500 }
     )
   }

@@ -51,10 +51,11 @@ export async function GET(request: NextRequest) {
       }
     })
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('获取使用统计失败:', error)
+    const errorMessage = error instanceof Error ? error.message : '获取使用统计失败'
     return NextResponse.json({
-      error: error.message || '获取使用统计失败'
+      error: errorMessage
     }, { status: 500 })
   }
 }

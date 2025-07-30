@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { MembershipService } from '@/lib/membership'
@@ -47,7 +47,7 @@ const CREDIT_PACKAGES = [
   }
 ]
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const cookieStore = await cookies()
     const supabase = createServerClient(
@@ -93,11 +93,13 @@ export async function GET(request: NextRequest) {
         }
       }
     })
-  } catch (error: any) {
-    console.error('获取积分购买数据失败:', error)
-    return NextResponse.json(
-      { error: error.message || '服务器错误' },
-      { status: 500 }
-    )
+  } catch (error: unknown) {
+    console.error('获取购买数据失败:', error)
+    const errorMessage = error instanceof Error ? error.message : '服务器错误'
+    return NextResponse.json({
+      error: errorMessage
+    }, { status: 500 })
   }
 }
+
+

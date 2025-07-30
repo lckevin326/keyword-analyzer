@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { withFeatureUsage } from '@/lib/permission-middleware'
 import DataForSEOService from '@/lib/keyword-data'
 

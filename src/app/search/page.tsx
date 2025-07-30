@@ -6,11 +6,14 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select } from '@/components/ui/select'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Loading, PageLoading, CardLoading } from '@/components/ui/loading'
+import { Loading, PageLoading } from '@/components/ui/loading'
 import { supabase } from '@/lib/supabase'
 import { type KeywordData } from '@/lib/keyword-data'
-import { Search, Target, BarChart3, TrendingUp, Globe } from 'lucide-react'
-import PermissionGuard, { PermissionBanner } from '@/components/membership/permission-guard'
+import { 
+  Search, Target, BarChart3, 
+  TrendingUp, Globe
+} from 'lucide-react'
+import { PermissionBanner } from '@/components/membership/permission-guard'
 import { refreshCredits } from '@/lib/credit-refresh'
 
 export default function SearchPage() {
@@ -61,9 +64,10 @@ export default function SearchPage() {
       // 触发积分刷新
       refreshCredits()
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('搜索失败:', error)
-      setError(error.message || '搜索失败，数据服务暂时不可用，请稍后重试')
+      const errorMessage = error instanceof Error ? error.message : '搜索失败，请重试'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -266,3 +270,4 @@ export default function SearchPage() {
     </div>
   )
 }
+

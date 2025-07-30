@@ -99,6 +99,7 @@ export class MembershipService {
 
   // 获取用户当前订阅
   async getUserSubscription(userId: string): Promise<UserSubscription | null> {
+    console.log(`[MEMBERSHIP] 查询用户 ${userId} 的订阅信息`)
     const { data, error } = await this.supabase
       .from('user_subscriptions')
       .select(`

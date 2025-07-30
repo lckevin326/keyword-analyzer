@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Select } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
@@ -19,7 +19,7 @@ export default function TrendingPage() {
   const [lastUpdated, setLastUpdated] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
 
-  const loadTrendingKeywords = async () => {
+  const loadTrendingKeywords = useCallback(async () => {
     setLoading(true)
     setError('')
 
@@ -48,19 +48,18 @@ export default function TrendingPage() {
       // 使用确定性的时间戳格式化，避免 hydration mismatch
       setLastUpdated(new Date().toLocaleTimeString('zh-CN'))
 
-    } catch (error: any) {
-      console.error('获取热门关键词失败:', error)
-      setError(error.message || '获取热门关键词失败，数据服务暂时不可用，请稍后重试')
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : '获取趋势关键词失败'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   useEffect(() => {
     setMounted(true)
-    // 页面加载时自动获取热门关键词
     loadTrendingKeywords()
-  }, [location])
+  }, [loadTrendingKeywords])
 
   const getGrowthColor = (growthRate: number) => {
     if (growthRate > 50) return 'text-green-600'

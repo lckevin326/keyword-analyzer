@@ -7,7 +7,11 @@ import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
 import OptimizedCreditDisplay from '@/components/optimized-credit-display'
 import OptimizedMembershipStatus from '@/components/optimized-membership-status'
-import { Search, TrendingUp, Menu, X, User, Target, PenTool, History, Crown, CreditCard } from 'lucide-react'
+import { 
+  Search, TrendingUp, Target, 
+  History, User, 
+  Menu, X, PenTool
+} from 'lucide-react'
 
 interface User {
   id: string
@@ -368,3 +372,4 @@ export default function Navigation() {
     </nav>
   )
 }
+

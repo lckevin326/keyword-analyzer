@@ -1,19 +1,18 @@
-'use client'
-
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select } from '@/components/ui/select'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Loading, PageLoading, CardLoading } from '@/components/ui/loading'
+import { Loading, PageLoading } from '@/components/ui/loading'
 import { supabase } from '@/lib/supabase'
 import { type ContentOutlineResponse, type TitleGenerationResponse } from '@/lib/deepseek'
 import { 
-  PenTool, Lightbulb, FileText, Copy, CheckCircle, Star,
-  Zap, Target, Users, Brain, Award, TrendingUp
+  Target, TrendingUp, 
+  PenTool, Brain, Zap, Award, CheckCircle, Star,
+  Lightbulb, FileText, Copy
 } from 'lucide-react'
-import PermissionGuard, { PermissionBanner } from '@/components/membership/permission-guard'
+import { PermissionBanner } from '@/components/membership/permission-guard'
 import { refreshCredits } from '@/lib/credit-refresh'
 
 type ActiveTab = 'titles' | 'outline'
@@ -162,9 +161,10 @@ export default function ContentAssistantPage() {
       // 触发积分刷新
       refreshCredits()
 
-    } catch (error: any) {
-      console.error('内容大纲生成失败:', error)
-      setError(error.message || '生成失败，请重试')
+    } catch (error: unknown) {
+      console.error('生成内容失败:', error)
+      const errorMessage = error instanceof Error ? error.message : '生成失败，请重试'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -209,9 +209,10 @@ export default function ContentAssistantPage() {
       // 触发积分刷新
       refreshCredits()
 
-    } catch (error: any) {
-      console.error('标题生成失败:', error)
-      setError(error.message || '生成失败，请重试')
+    } catch (error: unknown) {
+      console.error('生成大纲失败:', error)
+      const errorMessage = error instanceof Error ? error.message : '生成失败，请重试'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -268,6 +269,40 @@ export default function ContentAssistantPage() {
       '通用类': 'bg-gray-100 text-gray-700'
     }
     return colors[type] || 'bg-gray-100 text-gray-700'
+  }
+
+  const handleSaveContent = async (content: string, type: string) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        throw new Error('请先登录')
+      }
+
+      const response = await fetch('/api/content/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify({
+          content,
+          type,
+          userId: session.user.id
+        })
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || '保存失败')
+      }
+
+      alert('内容已成功保存')
+    } catch (error: unknown) {
+      console.error('保存内容失败:', error)
+      const errorMessage = error instanceof Error ? error.message : '保存失败，请重试'
+      alert(errorMessage)
+    }
   }
 
   return (
@@ -759,3 +794,8 @@ export default function ContentAssistantPage() {
     </div>
   )
 }
+
+
+
+
+

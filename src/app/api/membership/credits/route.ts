@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { MembershipService } from '@/lib/membership'
 
@@ -53,8 +53,8 @@ export async function GET(request: NextRequest) {
         // 不抛出错误，直接返回默认值
       } else if (subscriptionData) {
         currentCredits = subscriptionData.current_credits || 100
-        planName = (subscriptionData.membership_plans as any)?.plan_name || '免费版'
-        monthlyCredits = (subscriptionData.membership_plans as any)?.monthly_credits || 100
+        planName = (subscriptionData.membership_plans as { plan_name?: string })?.plan_name || '免费版'
+        monthlyCredits = (subscriptionData.membership_plans as { monthly_credits?: number })?.monthly_credits || 100
       }
 
       if (!subscriptionData) {
@@ -128,25 +128,27 @@ export async function GET(request: NextRequest) {
       }
     })
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('获取积分信息失败:', error)
+    const errorMessage = error instanceof Error ? error.message : '获取积分信息失败'
     return NextResponse.json({
-      error: error.message || '获取积分信息失败'
+      error: errorMessage
     }, { status: 500 })
   }
 }
 
 // 购买积分（暂时不支持，通过会员订阅获取积分）
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     return NextResponse.json({
       error: '积分购买功能暂未开放，请通过升级会员获取更多积分'
     }, { status: 400 })
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('购买积分失败:', error)
+    const errorMessage = error instanceof Error ? error.message : '购买失败，请重试'
     return NextResponse.json({
-      error: error.message || '购买失败，请重试'
+      error: errorMessage
     }, { status: 500 })
   }
 }

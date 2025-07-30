@@ -6,12 +6,12 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select } from '@/components/ui/select'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Loading, PageLoading, CardLoading } from '@/components/ui/loading'
+import { Loading, PageLoading } from '@/components/ui/loading'
 import { supabase } from '@/lib/supabase'
 import { type TopPagesAnalysis } from '@/lib/keyword-data'
 import { 
-  Globe, BarChart3, TrendingUp, ExternalLink, Search, Target, 
-  FileText, Users, Clock, Tag, Copy
+  Globe, BarChart3, ExternalLink, Search, Target, 
+  FileText, Tag, Copy
 } from 'lucide-react'
 import { refreshCredits } from '@/lib/credit-refresh'
 import { PermissionBanner } from '@/components/membership/permission-guard'
@@ -60,9 +60,9 @@ export default function TopPagesPage() {
       // 触发积分刷新
       refreshCredits()
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('高流量页面分析失败:', error)
-      setError(error.message || '分析失败，数据服务暂时不可用，请稍后重试')
+      setError(error instanceof Error ? error.message : '分析失败，请稍后重试')
     } finally {
       setLoading(false)
     }
@@ -406,3 +406,4 @@ export default function TopPagesPage() {
     </div>
   )
 }
+

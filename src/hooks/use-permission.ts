@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 
 interface PermissionResult {
   has_permission: boolean
@@ -23,7 +23,7 @@ export function usePermission(featureCode: string): UsePermissionResult {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const checkPermission = async () => {
+  const checkPermission = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
@@ -58,11 +58,13 @@ export function usePermission(featureCode: string): UsePermissionResult {
     } finally {
       setLoading(false)
     }
-  }
+  }, [featureCode])
 
   useEffect(() => {
-    checkPermission()
-  }, [featureCode])
+    if (featureCode) {
+      checkPermission()
+    }
+  }, [featureCode, checkPermission])
 
   return {
     canUse: permission?.has_permission || false,

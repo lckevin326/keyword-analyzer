@@ -32,10 +32,11 @@ export async function GET() {
       }
     })
 
-  } catch (error: any) {
-    console.error('获取用户订阅信息失败:', error)
+  } catch (error: unknown) {
+    console.error('获取订阅信息失败:', error)
+    const errorMessage = error instanceof Error ? error.message : '获取订阅信息失败'
     return NextResponse.json({
-      error: error.message || '获取订阅信息失败'
+      error: errorMessage
     }, { status: 500 })
   }
 }

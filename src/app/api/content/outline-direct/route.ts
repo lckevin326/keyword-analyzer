@@ -116,11 +116,10 @@ export async function POST(request: NextRequest) {
       message: `成功为关键词 "${targetKeyword}" 生成内容大纲，消耗 8 积分`
     })
 
-  } catch (error: any) {
-    console.error('Direct API - 内容大纲生成失败:', error)
-    
+  } catch (error: unknown) {
+    console.error('Direct API - Error:', error)
     return NextResponse.json({ 
-      error: error.message || '生成失败，请重试' 
+      error: error instanceof Error ? error.message : '服务器内部错误' 
     }, { status: 500 })
   }
 }

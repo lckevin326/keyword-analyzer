@@ -14,13 +14,8 @@ import { TrendingUp, Eye, EyeOff, CheckCircle, AlertCircle } from 'lucide-react'
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState(false)
-  const [validSession, setValidSession] = useState(false)
-  
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -69,8 +64,9 @@ export default function ResetPasswordPage() {
       setTimeout(() => {
         router.push('/auth/login?message=password_updated')
       }, 3000)
-    } catch (error: any) {
-      setError(error.message || '密码重置失败，请重试')
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : '重置失败，请重试'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -276,3 +272,7 @@ export default function ResetPasswordPage() {
     </div>
   )
 }
+
+
+
+

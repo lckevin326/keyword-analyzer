@@ -65,3 +65,48 @@ export type Database = {
     }
   }
 }
+
+export const signIn = async (email: string, password: string): Promise<AuthResponse> => {
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
+    
+    if (error) throw error
+    
+    return { data, error: null }
+  } catch (error: unknown) {
+    return { 
+      data: { user: null, session: null }, 
+      error: error as AuthError 
+    }
+  }
+}
+
+export const signUp = async (email: string, password: string): Promise<AuthResponse> => {
+  try {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+    })
+    
+    if (error) throw error
+    
+    return { data, error: null }
+  } catch (error: unknown) {
+    return { 
+      data: { user: null, session: null }, 
+      error: error as AuthError 
+    }
+  }
+}
+
+export const signOut = async (): Promise<{ error: AuthError | null }> => {
+  try {
+    const { error } = await supabase.auth.signOut()
+    return { error }
+  } catch (error: unknown) {
+    return { error: error as AuthError }
+  }
+}

@@ -8,8 +8,8 @@ export default function MembershipPlansPage() {
         {/* 页面头部 */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-4">选择适合您的会员方案</h1>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            升级会员享受更多功能权限和积分赠送，提升您的关键词分析效率
+          <p className="text-gray-600 mb-8">
+            选择最适合您的方案，开启高效的SEO内容创作之旅。所有方案都包含14天免费试用期。
           </p>
         </div>
 
@@ -58,3 +58,6 @@ export default function MembershipPlansPage() {
     </div>
   )
 }
+
+
+
